@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: challenge5-app-status-configmap
+data:
+  NODE_ENV: development
+  DATABASE_HOST: svc-challenge5-app-status-database
+  DATABASE_PORT: "3306"
+  DATABASE_NAME: challenge5_database_schema
+  DATABASE_USER: challenge5_database_username
+  DATABASE_PASS: challenge5_database_password

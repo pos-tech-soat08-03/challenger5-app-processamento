@@ -1,0 +1,140 @@
+name: Application CD - Kubernetes Deployment in AWS EKS
+
+on: 
+  workflow_dispatch:
+    inputs:
+      aws_access_key_id:
+        description: 'AWS Access Key ID'
+        required: true
+      aws_secret_access_key:
+        description: 'AWS Secret Access Key'
+        required: true
+      aws_session_token:
+        description: 'AWS Session Token'
+        required: true
+      aws_account_id:
+        description: 'AWS Account ID'
+        required: true
+      aws_backend_bucket:
+        description: 'AWS S3 Bucket Terraform State'
+        required: true
+      aws_region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-east-1'
+
+jobs:
+  terraform:
+    name: Application Deployment
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+  
+    steps:
+      
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Mascarar Credenciais
+      run: |
+        echo "::add-mask::${{ github.event.inputs.aws_access_key_id }}"
+        echo "::add-mask::${{ github.event.inputs.aws_secret_access_key }}"
+        echo "::add-mask::${{ github.event.inputs.aws_session_token }}"
+        echo "::add-mask::${{ github.event.inputs.aws_account_id }}"
+        echo "::add-mask::${{ github.event.inputs.aws_backend_bucket }}"
+        echo "::add-mask::${{ github.event.inputs.aws_region }}"
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Configure AWS CLI 
+      uses: aws-actions/configure-aws-credentials@v1
+      with: 
+        aws-access-key-id: ${{ github.event.inputs.aws_access_key_id }}
+        aws-secret-access-key: ${{ github.event.inputs.aws_secret_access_key }}
+        aws-session-token: ${{ github.event.inputs.aws_session_token }}
+        aws-region: ${{ github.event.inputs.aws_region }}
+            
+    - name: Verify AWS CLI Configuration
+      run: aws sts get-caller-identity
+
+    - name: Download terraform_infrastructure.json from S3 infrastructure challenge5-infra/terraform.tfstate
+      run: | 
+        aws s3 cp s3://${{ github.event.inputs.aws_backend_bucket }}/challenge5-infra/terraform.tfstate terraform_infrastructure.json 
+        
+    - name: Extract EKS Cluster Name 
+      id: extract-cluster-name
+      run: | 
+        CLUSTER_NAME=$(jq -r '.outputs.challenge5_cluster_name.value' terraform_infrastructure.json)
+        echo "CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_OUTPUT
+
+    - name: Update kubeconfig 
+      run: | 
+        aws eks update-kubeconfig --name ${{ steps.extract-cluster-name.outputs.CLUSTER_NAME }} --region ${{ github.event.inputs.aws_region }} 
+    
+    - name: Create file challenge5-app-status-configmap.yaml
+      working-directory: manifesto_kubernetes/
+      run: |
+          cat <<EOF > challenge5-app-status-configmap.yaml
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: challenge5-app-status-configmap
+          data:
+            NODE_ENV: development
+            DATABASE_HOST: "svc-challenge5-app-status-database"
+            DATABASE_PORT: "${{ secrets.MYSQL_PORT}}"
+            DATABASE_NAME: "${{ secrets.MYSQL_DATABASE }}-CLIENTE"
+            DATABASE_USER: "${{ secrets.MYSQL_USER }}"
+            DATABASE_PASS: "${{ secrets.MYSQL_PASSWORD }}"
+          EOF
+
+    - name: Create file challenge5-app-status-database-configmap.yaml
+      working-directory: manifesto_kubernetes/
+      run: |
+        cat <<EOF > challenge5-app-status-database-configmap.yaml
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: challenge5-app-status-database-configmap
+        data:
+          MYSQL_DATABASE: "${{ secrets.MYSQL_DATABASE }}-CLIENTE"
+          MYSQL_USER: "${{ secrets.MYSQL_USER }}"
+          MYSQL_PASSWORD: "${{ secrets.MYSQL_PASSWORD }}"
+          MYSQL_ROOT_PASSWORD: "${{ secrets.MYSQL_ROOT_PASSWORD }}"
+        EOF
+
+    - name: Deploy in AWS EKS Cluster
+      working-directory: manifesto_kubernetes/ 
+      run: |
+        kubectl apply -f challenge5-app-status-database-configmap.yaml
+        kubectl apply -f challenge5-app-status-configmap.yaml
+        kubectl apply -f svc-challenge5-app-status.yaml
+        kubectl apply -f svc-challenge5-app-status-database.yaml
+        kubectl apply -f pv-challenge5-app-status-database.yaml
+        kubectl apply -f pvc-challenge5-app-status-database.yaml
+        kubectl apply -f challenge5-app-status-hpa.yaml
+        kubectl apply -f challenge5-app-status-database-deployment.yaml
+        kubectl apply -f challenge5-app-status-deployment.yaml
+  
+    - name: Obtain Load Balancer Hostname
+      id: get-load-balancer-hostname
+      run: |
+        HOSTNAME=$(kubectl get svc svc-challenge5-app-status -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        echo "LB_HOSTNAME=$HOSTNAME" >> $GITHUB_OUTPUT
+    
+    - name: Obter Porta do Load Balancer
+      id: get-load-balancer-port
+      run: |
+        PORT=$(kubectl get svc svc-challenge5-app-status -o jsonpath='{.spec.ports[0].port}')
+        echo "LB_PORT=$PORT" >> $GITHUB_OUTPUT
+    
+    - name: Export Load Balancer Hostname and Port to S3
+      run: |
+        echo '{' > challenge5-app-status.json
+        echo '  "lb_hostname": "${{ steps.get-load-balancer-hostname.outputs.LB_HOSTNAME }}",' >> challenge5-app-status.json
+        echo '  "lb_port": "${{ steps.get-load-balancer-port.outputs.LB_PORT }}"' >> challenge5-app-status.json
+        echo '}' >> challenge5-app-status.json
+        aws s3 cp challenge5-app-status.json s3://${{ github.event.inputs.aws_backend_bucket }}/challenge5-apps/challenge5-app-status.json

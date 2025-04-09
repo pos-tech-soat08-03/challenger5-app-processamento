@@ -1,0 +1,46 @@
+name: Application CI - Dependencies, Builds, Unit Tests and SonarCloud quality check
+
+on:
+  push:
+    branches:
+      - "feature/*"
+      - "hotfix/*"
+      - "chore/*"
+  pull_request:    
+    branches:
+      - "main"        
+  
+permissions:
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+
+jobs:
+  lint-and-build:
+    name: Code Check Dependencies and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # improve analysis with SonarCloud
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run tests with coverage (unit tests)
+        run: npm run test-coverage
+
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .

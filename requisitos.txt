@@ -1,0 +1,10 @@
+1 - Criação estrutura de conexão com SNS via SQS
+2 - Receber os dados do video, usuario e config do SQS
+3 - Criar os objetos dos dados recebidos
+4 - Conectar no s3 e baixar o video para diretorio interno do servidor
+5 - Criar os frames com a biblioteca ffmpeg, salvando as imagens em diretorio
+5.1 - Enviar status de avanço do processamento e configurar possível erro
+6 - Zipar imagens criadas e fazer upload pro s3
+7 - Criar uma url assinada pela s3 para disponibilizar para o usuario
+8 - Enviar uma mensagem de conclusão com a url assinada
+9 - Deletar video do s3

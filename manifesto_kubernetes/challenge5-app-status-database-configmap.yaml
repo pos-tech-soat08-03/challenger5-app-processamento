@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: challenge5-app-status-database-configmap
+data:
+  MYSQL_DATABASE: challenge5_database_schema
+  MYSQL_USER: challenge5_database_username
+  MYSQL_PASSWORD: challenge5_database_password
+  MYSQL_ROOT_PASSWORD: challenge5_database_password_10
