@@ -1,14 +1,14 @@
 // src/Infrastructure/QueueWorker/QueueWorker.ts
-import { ProcessarVideoUseCase } from "../../Core/Usecases/ProcessarVideoUseCase";
+import { VideoQueueHandler } from "../../Core/Handlers/VideoQueueHandler";
 
 export class QueueWorker {
-  constructor(private readonly processarVideoUseCase: ProcessarVideoUseCase) {}
+  constructor(private readonly queueHandler: VideoQueueHandler) {}
 
   async start(): Promise<void> {
     console.log("QueueWorker iniciado. Iniciando polling da fila SQS...");
     while (true) {
       try {
-        await this.processarVideoUseCase.executar();
+        await this.queueHandler.handle();
         // Pequena pausa para evitar consumo excessivo de CPU
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {

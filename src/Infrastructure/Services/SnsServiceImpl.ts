@@ -1,11 +1,11 @@
-// src/Application/Adapters/SnsNotificationAdapter.ts
+// src/Application/Adapters/SnsServiceImpl.ts
 import { PublishCommand } from "@aws-sdk/client-sns";
-import { NotificationRepositoryInterface } from "../../Core/Interfaces/Repositories/NotificationRepositoryInterface";
+import { NotificationServiceInterface } from "../../Core/Interfaces/Services/NotificationServiceInterface";
 import { MessageStatusEntity } from "../../Core/Entity/MessageStatusEntity";
 import { MessageErrorEntity } from "../../Core/Entity/MessageErrorEntity"; // Novo
-import { SnsConfig } from "../../Infrastructure/Configs/SnsConfig";
+import { SnsConfig } from "../Configs/SnsConfig";
 
-export class SnsNotificationAdapter implements NotificationRepositoryInterface {
+export class SnsServiceImpl implements NotificationServiceInterface {
   constructor(private readonly snsConfig: SnsConfig) {}
 
   async informarStatus(
