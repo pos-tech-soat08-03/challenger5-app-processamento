@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge5-app-status-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: challenge5-app-status
+  template:
+    metadata:
+      name: challenge5-app-status
+      labels:
+        app: challenge5-app-status
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: challenge5-app-status-container
+        image: brunomoreirareis/challenge5-app-status:latest
+        resources:
+          limits:
+            memory: "1000Mi"
+            cpu: "500m"
+            ephemeral-storage: "2Gi"
+          requests:
+            memory: "500Mi"
+            cpu: "250m"
+            ephemeral-storage: "2Gi"
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: challenge5-app-status-configmap
+            optional: true
+        volumeMounts:
+        - name: challenge5-app-status-storage
+          mountPath: /data
+      volumes:
+      - name: challenge5-app-status-storage
+        emptyDir: {}

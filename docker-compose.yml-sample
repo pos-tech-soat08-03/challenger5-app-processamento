@@ -1,0 +1,42 @@
+
+services:
+  backend:
+    build: .
+    image: challenge5-app-status:1.0.0
+    container_name: challenge5
+    environment:
+      NODE_ENV: "development"
+      SERVER_PORT: "3000"
+      DATABASE_HOST: "challenge5_database"
+      DATABASE_PORT: "3306"
+      DATABASE_NAME: "challenge5_database_schema"
+      DATABASE_USER: "challenge5_database_username"
+      DATABASE_PASS: "challenge5_database_password"
+    ports:
+      - "3000:3000"
+    links:
+      - challenge5_database
+    depends_on:
+        challenge5_database:
+            condition: service_healthy
+  challenge5_database:
+    image: mysql:9.0.1
+    container_name: challenge5_database
+    restart: always
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - challenge5_database:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: 'challenge5_database_schema'
+      MYSQL_USER: 'challenge5_database_username'
+      MYSQL_PASSWORD: 'challenge5_database_password'
+      MYSQL_ROOT_PASSWORD: 'challenge5_database_password_10'
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-pchallenge5_database_password_10"] 
+      timeout: 5s
+      retries: 3
+volumes:
+  challenge5_database:

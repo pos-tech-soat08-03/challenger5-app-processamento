@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566" # Porta padrão do LocalStack
+    environment:
+      - SERVICES=sqs,sns,s3 # Ativa apenas SQS, SNS e S3
+      - AWS_DEFAULT_REGION=us-east-1 # Região simulada
+      - DEBUG=1 # Ativa logs detalhados (opcional)
+    volumes:
+      - "./localstack-data:/var/lib/localstack" # Persiste dados locais
+      - "/var/run/docker.sock:/var/run/docker.sock" # Permite ao LocalStack usar o Docker
