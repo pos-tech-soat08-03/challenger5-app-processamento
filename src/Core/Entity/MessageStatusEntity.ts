@@ -3,24 +3,27 @@ import { Status } from "../Types/Status";
 export class MessageStatusEntity {
   constructor(
     public readonly idVideo: string,
-    public readonly idUser: string,
+    public readonly idUsuario: string,
     public readonly status: Status,
     public readonly percentage: number,
-    public readonly presignedUrl?: string // Campo opcional para a URL assinada
+    public readonly statusTime: string,
+    public readonly presignedUrl?: string,
   ) {}
 
   static create(
     idVideo: string,
-    idUser: string,
+    idUsuario: string,
     status: Status,
     percentage: number,
+    statusTime: string = new Date().toISOString(),
     presignedUrl?: string
   ): MessageStatusEntity {
     return new MessageStatusEntity(
       idVideo,
-      idUser,
+      idUsuario,
       status,
       percentage,
+      statusTime,
       presignedUrl
     );
   }

@@ -3,25 +3,18 @@ import { StatusError } from "../Types/Status";
 export class MessageErrorEntity {
   constructor(
     public readonly idVideo: string,
-    public readonly idUser: string,
+    public readonly idUsuario: string,
     public readonly status: StatusError,
-    public readonly statusTime: string,
-    public readonly errorMessage: string
+    public readonly errorMessage: string,
+    public readonly statusTime: string = new Date().toISOString()
   ) {}
 
   static create(
     idVideo: string,
-    idUser: string,
+    idUsuario: string,
     status: StatusError,
-    errorMessage: string,
-    statusTime: string = new Date().toISOString()
+    errorMessage: string
   ): MessageErrorEntity {
-    return new MessageErrorEntity(
-      idVideo,
-      idUser,
-      status,
-      statusTime,
-      errorMessage
-    );
+    return new MessageErrorEntity(idVideo, idUsuario, status, errorMessage);
   }
 }

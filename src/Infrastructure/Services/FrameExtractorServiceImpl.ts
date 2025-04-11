@@ -1,7 +1,6 @@
 import { NotificationServiceInterface } from "../../Core/Interfaces/Services/NotificationServiceInterface";
 import { MessageStatusEntity } from "../../Core/Entity/MessageStatusEntity";
 import { MessageErrorEntity } from "../../Core/Entity/MessageErrorEntity";
-import { VideoEntity } from "../../Core/Entity/VideoEntity";
 import { MessageVideoData } from "../../Core/Entity/MessageVideoData";
 import * as fsPromises from "fs/promises";
 import * as path from "path";
@@ -13,23 +12,22 @@ export class FrameExtractorServiceImpl
 {
   async extractFrames(
     videoPath: string,
-    config: MessageVideoData["config"],
-    video: VideoEntity,
-    notificationRepo: NotificationServiceInterface
+    videoData: MessageVideoData,
+    notificationService: NotificationServiceInterface
   ): Promise<void> {
-    const outputDir = "/tmp/frames";
-    await fsPromises.mkdir(outputDir, { recursive: true });
+    const framesDir = path.join(path.dirname(videoPath), "frames");
+    await fsPromises.mkdir(framesDir, { recursive: true });
     const outputPattern = path.join(
-      outputDir,
-      `frame-%04d.${config.outputFormat}`
+      framesDir,
+      `frame-%04d.${videoData.config.outputFormat}`
     );
     const notifiedPercentages = new Set<number>([0]);
 
     return new Promise((resolve, reject) => {
       ffmpeg(videoPath)
         .outputOptions([
-          `-vf fps=1/${config.interval}`,
-          `-s ${config.resolution}`,
+          `-vf fps=${videoData.config.interval}`,
+          `-s ${videoData.config.resolution}`,
         ])
         .output(outputPattern)
         .on("progress", (progress) => {
@@ -41,12 +39,12 @@ export class FrameExtractorServiceImpl
           if (!notifiedPercentages.has(milestone) && milestone > 0) {
             notifiedPercentages.add(milestone);
             const processingStatus = MessageStatusEntity.create(
-              video.getId(),
-              video.getUsuarioId(),
+              videoData.video.idVideo,
+              videoData.user.idUsuario,
               "PROCESSING",
               milestone
             );
-            notificationRepo
+            notificationService
               .informarStatus(processingStatus)
               .catch((err) =>
                 console.error("Erro ao notificar progresso:", err)
@@ -63,12 +61,12 @@ export class FrameExtractorServiceImpl
             ? "INTERRUPTED"
             : "ERROR";
           const errorStatus = MessageErrorEntity.create(
-            video.getId(),
-            video.getUsuarioId(),
+            videoData.video.idVideo,
+            videoData.user.idUsuario,
             status,
             err.message
           );
-          notificationRepo
+          notificationService
             .informarStatus(errorStatus)
             .catch((notifyErr) =>
               console.error("Erro ao notificar falha:", notifyErr)

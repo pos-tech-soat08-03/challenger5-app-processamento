@@ -14,7 +14,7 @@ export class S3Config {
             accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
           },
-      forcePathStyle: isLocal, // Necessário para LocalStack com S3
+      forcePathStyle: isLocal,
     };
     this.client = new S3Client(config);
   }
