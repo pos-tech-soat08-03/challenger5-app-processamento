@@ -38,15 +38,27 @@ aws --endpoint-url=http://localhost:4566 s3 mb s3://<BUCKET> --profile localstac
 aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name <FILA> --profile localstack <- cria fila
 aws --endpoint-url=http://localhost:4566 sns create-topic --name <TOPICO> --profile localstack <- cria topico
 
+aws --endpoint-url=http://localhost:4566 s3 mb s3://my-bucket --profile localstack
+aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name video-input-queue --profile localstack
+aws --endpoint-url=http://localhost:4566 sns create-topic --name VideoStatusTopic --profile localstack
+
 4. Preparar o Vídeo
 aws --endpoint-url=http://localhost:4566 s3 cp <VIDEO> s3://<BUCKET>/videos/<VIDEO> --profile localstack <- copia video no s3
 aws --endpoint-url=http://localhost:4566 s3 ls s3://<BUCKET>/videos/ --profile localstack <- confere video
+
+aws --endpoint-url=http://localhost:4566 s3 cp teste.mp4 s3://my-bucket/videos/teste.mp4 --profile localstack
+aws --endpoint-url=http://localhost:4566 s3 ls s3://my-bucket/videos/ --profile localstack
 
 5. Enviar Mensagem para a Fila SQS
 
 aws --endpoint-url=http://localhost:4566 sqs send-message \
   --queue-url http://localhost:4566/000000000000/<FILA> \
   --message-body '{"user":{"idUsuario":"user-123","email":"user@example.com"},"video":{"idVideo":"vid-123","title":"Big Buck Bunny","description":"Test Video","filename":"<VIDEO>","fullPath":"s3://<BUCKET>/videos/<VIDEO>","fileSize":10485760,"duration":60,"framerate":24},"config":{"outputFormat":"jpg","resolution":"640x480","interval":1}}' \
+  --profile localstack
+
+aws --endpoint-url=http://localhost:4566 sqs send-message \
+  --queue-url http://localhost:4566/000000000000/video-input-queue \
+  --message-body '{"user":{"id_usuario":"user-123","email":"user@example.com"},"video":{"id_video":"vid-123","title":"Big Buck Bunny","description":"Test Video","filename":"teste.mp4","full_path":"s3://my-bucket/videos/teste.mp4","file_size": 26836582,"duration":60,"framerate":24},"config":{"output_format":"jpg","resolution":"640x480","interval":5}}' \
   --profile localstack
 
 6. Rodar a Aplicação

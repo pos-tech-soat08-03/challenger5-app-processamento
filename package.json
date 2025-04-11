@@ -1,6 +1,6 @@
 {
   "name": "challenge5-app-status",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Aplicação Tech Challenge 5 (Hackaton) POSTECH SOAT8 FIAP - Serviço de Status",
   "main": "src/app.ts",
   "scripts": {
@@ -48,9 +48,6 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.2"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node"
   }
+
 }

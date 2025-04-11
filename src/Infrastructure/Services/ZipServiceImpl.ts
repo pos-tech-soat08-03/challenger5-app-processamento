@@ -5,7 +5,7 @@ import { ZipServiceInterface } from "../../Core/Interfaces/Services/ZipServiceIn
 
 export class ZipServiceImpl implements ZipServiceInterface {
   async createZip(videoId: string, framesDir: string): Promise<string> {
-    const zipPath = path.join("/tmp", `video-${videoId}.zip`);
+    const zipPath = path.join(path.dirname(framesDir), `video-${videoId}.zip`);
     const output = fs.createWriteStream(zipPath);
     const archive = archiver("zip", { zlib: { level: 9 } });
 

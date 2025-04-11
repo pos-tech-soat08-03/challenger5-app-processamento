@@ -16,8 +16,6 @@ export class S3ServiceImpl implements S3ServiceInterface {
     const normalizedPath = fullPath.replace("s3://", "");
     console.log("fullPath original:", normalizedPath);
     const [bucket, ...keyParts] = normalizedPath.split("/");
-    console.log("Bucket:", bucket);
-    console.log("Key:", keyParts.join("/"));
     if (!bucket) {
       throw new Error("Bucket não especificado no fullPath");
     }
