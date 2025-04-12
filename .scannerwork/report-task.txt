@@ -1,0 +1,6 @@
+projectKey=challenger5-app-processamento
+serverUrl=http://localhost:9000
+serverVersion=10.6.0.92116
+dashboardUrl=http://localhost:9000/dashboard?id=challenger5-app-processamento
+ceTaskId=0b63be6e-b926-442f-9749-5159dcf5b40a
+ceTaskUrl=http://localhost:9000/api/ce/task?id=0b63be6e-b926-442f-9749-5159dcf5b40a

@@ -8,4 +8,12 @@ module.exports = {
   transform: {
     "^.+\\.ts$": "ts-jest",
   },
+  coverageDirectory: "<rootDir>/coverage",
+  coverageReporters: ["lcov", "text", "html"],
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/tests/",
+    "/dist/",
+    "/coverage/",
+  ],
 };
