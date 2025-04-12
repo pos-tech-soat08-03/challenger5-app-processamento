@@ -40,7 +40,24 @@ async function startApp(): Promise<void> {
       zipService,
       videoProcessingConfig
     );
+
     const queueWorker = new QueueWorker(videoQueueHandler);
+
+    const gracefulShutdown = async (signal: string) => {
+      console.log(`\nRecebido sinal ${signal}. Encerrando worker...`);
+      try {
+        await queueWorker.stop();
+        console.log("Worker encerrado com sucesso. Saindo...");
+        process.exit(0);
+      } catch (error) {
+        console.error("Erro durante o encerramento:", error);
+        process.exit(1);
+      }
+    };
+
+    // Captura de sinais de desligamento
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 
     console.log("Iniciando a aplicação de processamento de vídeos...");
     await queueWorker.start();
@@ -52,6 +69,16 @@ async function startApp(): Promise<void> {
     process.exit(1);
   }
 }
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Rejeição não tratada em:", promise, "Motivo:", reason);
+  process.exit(1);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Exceção não capturada:", error);
+  process.exit(1);
+});
 
 startApp().catch((error) => {
   console.error("Erro crítico na aplicação:", error);

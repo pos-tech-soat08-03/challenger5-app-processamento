@@ -70,7 +70,7 @@ export class VideoQueueHandler {
         const [bucket] = videoData.video.fullPath
           .replace("s3://", "")
           .split("/");
-        const zipKey = `videos/${this.config.processedPrefix}/video-${videoData.video.idVideo}.zip`;
+        const zipKey = `videos/${this.config.processedPrefix}/${videoData.video.idVideo}.zip`;
         await this.s3Service.uploadZip(bucket, zipKey, zipPath);
 
         console.log(`Gerando URL assinada para o ZIP no S3`);

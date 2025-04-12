@@ -6,10 +6,10 @@ on:
       - "feature/*"
       - "hotfix/*"
       - "chore/*"
-  pull_request:    
+  pull_request:
     branches:
-      - "main"        
-  
+      - "main"
+
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
