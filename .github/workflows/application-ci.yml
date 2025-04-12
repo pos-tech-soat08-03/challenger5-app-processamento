@@ -39,7 +39,7 @@ jobs:
         run: npm run test-coverage
 
       - name: Analyze with SonarCloud
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
