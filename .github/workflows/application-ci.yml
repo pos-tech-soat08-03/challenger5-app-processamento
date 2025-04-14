@@ -6,6 +6,7 @@ on:
       - "feature/*"
       - "hotfix/*"
       - "chore/*"
+      - "develop"
   pull_request:
     branches:
       - "main"
