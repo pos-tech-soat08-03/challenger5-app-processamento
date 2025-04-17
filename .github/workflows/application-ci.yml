@@ -12,55 +12,35 @@ on:
       - "main"
 
 permissions:
-  pull-requests: write
-  contents: read
-  checks: write
-  statuses: write
+  pull-requests: write # Permite SonarCloud decorar PRs
+  contents: read # Para clonar o repositório
+  checks: write # Para atualizar checks
 
 jobs:
-  test:
-    name: Run Unit Tests
+  lint-and-build:
+    name: Code Check Dependencies and Build
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - run: npm install
-      - run: npm run test-coverage
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
 
-  sonarcloud:
-    name: SonarCloud Analysis
-    runs-on: ubuntu-latest
-    needs: [test]
-    if: github.event_name == 'pull_request' || github.ref_name == 'develop' || github.ref_name == 'main'
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - run: npm install
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run tests with coverage (unit tests)
+        run: npm run test-coverage
+
       - name: Verify SONAR_TOKEN
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
@@ -71,6 +51,7 @@ jobs:
           fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v3
         env:
@@ -79,5 +60,3 @@ jobs:
         with:
           args: >
             -Dsonar.qualitygate.wait=true
-            -Dsonar.branch.name=${{ github.ref_name }}
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
