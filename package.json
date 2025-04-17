@@ -8,6 +8,7 @@
     "test-coverage": "jest --testLocationInResults --coverage=true --reporters=default --colors --verbose ./test",
     "build": "tsc",
     "start": "node dist/app.js",
+    "start:local": "node -r dotenv/config dist/app.js dotenv_config_path=.env.local",
     "start:dev": "npm install --save-dev; CHOKIDAR_USEPOLLING=true dotenv -- tsnd --transpile-only --respawn --ignore-watch node_modules src/app.ts",
     "sonar": "sonar-scanner",
     "sonar:dev": "node sonar-config.js",

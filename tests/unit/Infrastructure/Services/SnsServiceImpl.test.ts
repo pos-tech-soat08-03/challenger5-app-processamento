@@ -4,13 +4,11 @@ import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import { MessageStatusEntity } from "../../../../src/Core/Entity/MessageStatusEntity";
 import { MessageErrorEntity } from "../../../../src/Core/Entity/MessageErrorEntity";
 
-// Mock do SNSClient
 jest.mock("@aws-sdk/client-sns", () => ({
   SNSClient: jest.fn(),
   PublishCommand: jest.fn((params) => params),
 }));
 
-// Mock do console.log
 const mockConsoleLog = jest.spyOn(console, "log").mockImplementation(() => {});
 const mockConsoleError = jest
   .spyOn(console, "error")
@@ -21,7 +19,6 @@ describe("SnsServiceImpl", () => {
   let mockSnsClient: jest.Mocked<SNSClient>;
   let mockSnsConfig: jest.Mocked<SnsConfig>;
 
-  // Dados de teste
   const statusEntity = MessageStatusEntity.create(
     "video-123",
     "user-456",
@@ -40,106 +37,91 @@ describe("SnsServiceImpl", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Configura o mock do SNSClient
     mockSnsClient = {
       send: jest.fn(async (command: PublishCommand) =>
         Promise.resolve({ $metadata: {}, MessageId: "msg-123" })
-      ) as jest.MockedFunction<(command: PublishCommand) => Promise<any>>,
+      ) as jest.MockedFunction<
+        (
+          command: PublishCommand
+        ) => Promise<{ $metadata: {}; MessageId: string }>
+      >,
     } as unknown as jest.Mocked<SNSClient>;
 
-    // Configura o mock do SnsConfig
     mockSnsConfig = {
       getClient: jest.fn().mockReturnValue(mockSnsClient),
-      getTopicArn: jest
+      getStatusTopicArn: jest
         .fn()
-        .mockReturnValue("arn:aws:sns:us-east-1:123456789012:test-topic"),
+        .mockReturnValue(
+          "arn:aws:sns:us-east-1:123456789012:test-status-topic"
+        ),
+      getErrorTopicArn: jest
+        .fn()
+        .mockReturnValue("arn:aws:sns:us-east-1:123456789012:test-error-topic"),
     } as unknown as jest.Mocked<SnsConfig>;
 
-    // Instancia o serviço
     snsService = new SnsServiceImpl(mockSnsConfig);
   });
 
   afterEach(() => {
     mockConsoleLog.mockClear();
-    mockConsoleError.mockClear(); // Limpa também o console.error
+    mockConsoleError.mockClear();
   });
 
-  // Atualize o bloco afterAll
   afterAll(() => {
     mockConsoleLog.mockRestore();
-    mockConsoleError.mockRestore(); // Restaura o console.error
+    mockConsoleError.mockRestore();
   });
 
   describe("informarStatus", () => {
-    it("should publish a status message successfully", async () => {
-      // Arrange
-      const expectedMessage = JSON.stringify({
-        idVideo: "video-123",
-        idUsuario: "user-456",
-        status: "COMPLETED",
-        percentage: 100,
-        statusTime: "2025-04-11T12:00:00Z",
-        presignedUrl: "https://s3.amazonaws.com/my-bucket/video-123.zip",
-      });
+    it("should publish a status message to status topic", async () => {
+      const expectedMessage = JSON.stringify(statusEntity);
 
-      // Act
       await snsService.informarStatus(statusEntity);
 
-      // Assert
       expect(mockSnsConfig.getClient).toHaveBeenCalled();
-      expect(mockSnsConfig.getTopicArn).toHaveBeenCalled();
+      expect(mockSnsConfig.getStatusTopicArn).toHaveBeenCalled();
+      expect(mockSnsConfig.getErrorTopicArn).not.toHaveBeenCalled();
       expect(mockSnsClient.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          TopicArn: "arn:aws:sns:us-east-1:123456789012:test-topic",
+          TopicArn: "arn:aws:sns:us-east-1:123456789012:test-status-topic",
           Message: expectedMessage,
         })
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        `Notificação enviada: ${expectedMessage}`
+        `Notificação enviada para arn:aws:sns:us-east-1:123456789012:test-status-topic: ${expectedMessage}`
       );
     });
 
-    it("should publish an error message successfully", async () => {
-      // Arrange
-      const expectedMessage = JSON.stringify({
-        idVideo: "video-123",
-        idUsuario: "user-456",
-        status: "ERROR",
-        errorMessage: "Failed to process video",
-        statusTime: errorEntity.statusTime, // Usa o statusTime real da entidade
-      });
+    it("should publish an error message to error topic", async () => {
+      const expectedMessage = JSON.stringify(errorEntity);
 
-      // Act
       await snsService.informarStatus(errorEntity);
 
-      // Assert
       expect(mockSnsConfig.getClient).toHaveBeenCalled();
-      expect(mockSnsConfig.getTopicArn).toHaveBeenCalled();
+      expect(mockSnsConfig.getStatusTopicArn).not.toHaveBeenCalled();
+      expect(mockSnsConfig.getErrorTopicArn).toHaveBeenCalled();
       expect(mockSnsClient.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          TopicArn: "arn:aws:sns:us-east-1:123456789012:test-topic",
+          TopicArn: "arn:aws:sns:us-east-1:123456789012:test-error-topic",
           Message: expectedMessage,
         })
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        `Notificação enviada: ${expectedMessage}`
-      ); // Adiciona o espaço
+        `Notificação enviada para arn:aws:sns:us-east-1:123456789012:test-error-topic: ${expectedMessage}`
+      );
     });
 
     it("should throw an error if SNS client fails", async () => {
-      // Arrange
       mockSnsClient.send.mockImplementationOnce(() =>
         Promise.reject(new Error("SNS publish failed"))
       );
 
-      // Act & Assert
       await expect(snsService.informarStatus(statusEntity)).rejects.toThrow(
         "SNS publish failed"
       );
       expect(mockSnsClient.send).toHaveBeenCalled();
-      expect(mockConsoleLog).not.toHaveBeenCalled();
       expect(mockConsoleError).toHaveBeenCalledWith(
-        "Erro ao enviar notificação:",
+        `Erro ao enviar notificação para arn:aws:sns:us-east-1:123456789012:test-status-topic:`,
         expect.any(Error)
       );
     });

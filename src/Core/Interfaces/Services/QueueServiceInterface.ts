@@ -1,6 +1,6 @@
-import { MessageVideoData } from "../../Entity/MessageVideoData";
+import { ResponseMessage } from "../ResponseMessage";
 
 export interface QueueServiceInterface {
-  receberProximaMensagem(): Promise<MessageVideoData | null>;
-  deletarMensagem(message: MessageVideoData): Promise<void>;
+  receberProximaMensagem(): Promise<ResponseMessage | null>;
+  deletarMensagem(message: ResponseMessage): Promise<void>;
 }

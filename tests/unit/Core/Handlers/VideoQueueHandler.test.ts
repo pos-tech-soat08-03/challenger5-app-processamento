@@ -6,6 +6,7 @@ import { FrameExtractorServiceInterface } from "../../../../src/Core/Interfaces/
 import { ZipServiceInterface } from "../../../../src/Core/Interfaces/Services/ZipServiceInterface";
 import { VideoProcessingConfig } from "../../../../src/Infrastructure/Configs/VideoProcessingConfig";
 import { MessageVideoData } from "../../../../src/Core/Entity/MessageVideoData";
+import { ResponseMessage } from "../../../../src/Core/Interfaces/ResponseMessage";
 
 // Mock do console.log para verificar mensagens de log
 const mockConsoleLog = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -35,6 +36,24 @@ describe("VideoQueueHandler", () => {
     },
     { outputFormat: "png", resolution: "1280x720", interval: 1 }
   );
+
+  const responseMessage: ResponseMessage = {
+    body: {
+      user: { id_usuario: "user-456", email: "user@example.com" },
+      video: {
+        id_video: "video-123",
+        title: "Test Video",
+        description: "A test video",
+        filename: "video.mp4",
+        full_path: "s3://my-bucket/videos/video-123.mp4",
+        file_size: 1000000,
+        duration: 120,
+        framerate: 24,
+      },
+      config: { output_format: "png", resolution: "1280x720", interval: 1 },
+    },
+    message: "receipt-789",
+  };
 
   beforeEach(() => {
     // Reseta os mocks antes de cada teste
@@ -80,12 +99,17 @@ describe("VideoQueueHandler", () => {
       config
     );
 
-    // Mock do MessageVideoData.validate
+    // Mock do MessageVideoData.fromSqsMessage e validate
+    jest.spyOn(MessageVideoData, "fromSqsMessage").mockReturnValue(videoData);
     jest.spyOn(MessageVideoData, "validate").mockImplementation(() => {});
   });
 
   afterEach(() => {
     mockConsoleLog.mockClear();
+  });
+
+  afterAll(() => {
+    mockConsoleLog.mockRestore();
   });
 
   it("should log message and exit when no video is in queue", async () => {
@@ -105,7 +129,7 @@ describe("VideoQueueHandler", () => {
 
   it("should process video successfully and notify status", async () => {
     // Arrange
-    queueService.receberProximaMensagem.mockResolvedValue(videoData);
+    queueService.receberProximaMensagem.mockResolvedValue(responseMessage);
     s3Service.downloadVideo.mockResolvedValue(undefined);
     frameExtractorService.extractFrames.mockResolvedValue(undefined);
     zipService.createZip.mockResolvedValue("/tmp/video-123.zip");
@@ -122,6 +146,10 @@ describe("VideoQueueHandler", () => {
 
     // Assert
     expect(queueService.receberProximaMensagem).toHaveBeenCalledTimes(1);
+    expect(MessageVideoData.fromSqsMessage).toHaveBeenCalledWith(
+      responseMessage.body,
+      responseMessage.message
+    );
     expect(MessageVideoData.validate).toHaveBeenCalledWith(videoData);
     expect(s3Service.downloadVideo).toHaveBeenCalledWith(
       "s3://my-bucket/videos/video-123.mp4",
@@ -166,12 +194,12 @@ describe("VideoQueueHandler", () => {
         presignedUrl: "https://s3.amazonaws.com/my-bucket/video-123.zip",
       })
     );
-    expect(queueService.deletarMensagem).toHaveBeenCalledWith(videoData);
+    expect(queueService.deletarMensagem).toHaveBeenCalledWith(responseMessage);
   });
 
   it("should handle generic error and notify error status", async () => {
     // Arrange
-    queueService.receberProximaMensagem.mockResolvedValue(videoData);
+    queueService.receberProximaMensagem.mockResolvedValue(responseMessage);
     s3Service.downloadVideo.mockRejectedValue(new Error("Download failed"));
     notificationService.informarStatus.mockResolvedValue(undefined);
     queueService.deletarMensagem.mockResolvedValue(undefined);
@@ -191,12 +219,12 @@ describe("VideoQueueHandler", () => {
         ),
       })
     );
-    expect(queueService.deletarMensagem).toHaveBeenCalledWith(videoData);
+    expect(queueService.deletarMensagem).toHaveBeenCalledWith(responseMessage);
   });
 
   it("should handle NoSuchKey error from S3 and notify specific error status", async () => {
     // Arrange
-    queueService.receberProximaMensagem.mockResolvedValue(videoData);
+    queueService.receberProximaMensagem.mockResolvedValue(responseMessage);
     s3Service.downloadVideo.mockRejectedValue(
       Object.assign(new Error("Key not found"), { Code: "NoSuchKey" })
     );
@@ -219,12 +247,12 @@ describe("VideoQueueHandler", () => {
         ),
       })
     );
-    expect(queueService.deletarMensagem).toHaveBeenCalledWith(videoData);
+    expect(queueService.deletarMensagem).toHaveBeenCalledWith(responseMessage);
   });
 
   it("should handle interrupted error and notify interrupted status", async () => {
     // Arrange
-    queueService.receberProximaMensagem.mockResolvedValue(videoData);
+    queueService.receberProximaMensagem.mockResolvedValue(responseMessage);
     s3Service.downloadVideo.mockResolvedValue(undefined);
     frameExtractorService.extractFrames.mockRejectedValue(
       new Error("Process killed with signal")
@@ -248,10 +276,6 @@ describe("VideoQueueHandler", () => {
         ),
       })
     );
-    expect(queueService.deletarMensagem).toHaveBeenCalledWith(videoData);
+    expect(queueService.deletarMensagem).toHaveBeenCalledWith(responseMessage);
   });
-});
-
-afterAll(() => {
-  mockConsoleLog.mockRestore();
 });
