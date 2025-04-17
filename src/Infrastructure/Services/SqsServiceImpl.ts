@@ -6,11 +6,12 @@ import {
 import { SqsConfig } from "../Configs/SqsConfig";
 import { QueueServiceInterface } from "../../Core/Interfaces/Services/QueueServiceInterface";
 import { MessageVideoData } from "../../Core/Entity/MessageVideoData";
+import { ResponseMessage } from "../../Core/Interfaces/ResponseMessage";
 
 export class SqsServiceImpl implements QueueServiceInterface {
   constructor(private readonly sqsConfig: SqsConfig) {}
 
-  async receberProximaMensagem(): Promise<MessageVideoData | null> {
+  async receberProximaMensagem(): Promise<ResponseMessage | null> {
     const command = new ReceiveMessageCommand({
       QueueUrl: this.sqsConfig.getQueueUrl(),
       MaxNumberOfMessages: 1,
@@ -24,15 +25,23 @@ export class SqsServiceImpl implements QueueServiceInterface {
 
     const message = response.Messages[0];
     const body = JSON.parse(message.Body || "{}") as MessageVideoData;
-    return MessageVideoData.fromSqsMessage(body, message.ReceiptHandle);
+    return {
+      body,
+      message: message.ReceiptHandle!,
+    };
   }
-  async deletarMensagem(videoData: MessageVideoData): Promise<void> {
+  async deletarMensagem(responseMessage: ResponseMessage): Promise<void> {
     const command = new DeleteMessageCommand({
       QueueUrl: this.sqsConfig.getQueueUrl(),
-      ReceiptHandle: videoData._receiptHandle,
+      ReceiptHandle: responseMessage.message,
     });
 
-    await this.sqsConfig.getClient().send(command);
-    console.log("Mensagem deletada da fila SQS:", videoData._receiptHandle);
+    try {
+      await this.sqsConfig.getClient().send(command);
+      console.log("Mensagem deletada da fila SQS:", responseMessage.message);
+    } catch (error) {
+      console.error("Erro ao deletar mensagem:", error);
+      throw error;
+    }
   }
 }

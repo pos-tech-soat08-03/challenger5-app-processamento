@@ -1,36 +1,36 @@
-# version: '3.8'
-# services:
-#   localstack:
-#     image: localstack/localstack:latest
-#     container_name: localstack
-#     ports:
-#       - "4566:4566" # Porta padrão do LocalStack
-#     environment:
-#       - SERVICES=sqs,sns,s3 # Ativa apenas SQS, SNS e S3
-#       - AWS_DEFAULT_REGION=us-east-1 # Região simulada
-#       - DEBUG=1 # Ativa logs detalhados (opcional)
-#     volumes:
-#       - "./localstack-data:/var/lib/localstack" # Persiste dados locais
-#       - "/var/run/docker.sock:/var/run/docker.sock" # Permite ao LocalStack usar o Docker
-
-version: "3.8"
+version: '3.8'
 services:
-  sonarqube:
-    image: sonarqube:10.6-community
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
     ports:
-      - "9000:9000"
+      - "4566:4566" # Porta padrão do LocalStack
     environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      - SERVICES=sqs,sns,s3 # Ativa apenas SQS, SNS e S3
+      - AWS_DEFAULT_REGION=us-east-1 # Região simulada
+      - DEBUG=1 # Ativa logs detalhados (opcional)
     volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_logs:/opt/sonarqube/logs
-      - sonarqube_extensions:/opt/sonarqube/extensions
-    networks:
-      - sonar-network
-volumes:
-  sonarqube_data:
-  sonarqube_logs:
-  sonarqube_extensions:
-networks:
-  sonar-network:
-    driver: bridge
+      - "./localstack-data:/var/lib/localstack" # Persiste dados locais
+      - "/var/run/docker.sock:/var/run/docker.sock" # Permite ao LocalStack usar o Docker
+
+# version: "3.8"
+# services:
+#   sonarqube:
+#     image: sonarqube:10.6-community
+#     ports:
+#       - "9000:9000"
+#     environment:
+#       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+#     volumes:
+#       - sonarqube_data:/opt/sonarqube/data
+#       - sonarqube_logs:/opt/sonarqube/logs
+#       - sonarqube_extensions:/opt/sonarqube/extensions
+#     networks:
+#       - sonar-network
+# volumes:
+#   sonarqube_data:
+#   sonarqube_logs:
+#   sonarqube_extensions:
+# networks:
+#   sonar-network:
+#     driver: bridge

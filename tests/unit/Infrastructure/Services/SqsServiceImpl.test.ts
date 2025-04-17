@@ -7,7 +7,7 @@ import {
   ReceiveMessageCommandOutput,
   DeleteMessageCommandOutput,
 } from "@aws-sdk/client-sqs";
-import { MessageVideoData } from "../../../../src/Core/Entity/MessageVideoData";
+import { ResponseMessage } from "../../../../src/Core/Interfaces/ResponseMessage";
 
 // Mock do SQSClient
 jest.mock("@aws-sdk/client-sqs", () => ({
@@ -18,28 +18,14 @@ jest.mock("@aws-sdk/client-sqs", () => ({
 
 // Mock do console.log
 const mockConsoleLog = jest.spyOn(console, "log").mockImplementation(() => {});
+const mockConsoleError = jest
+  .spyOn(console, "error")
+  .mockImplementation(() => {});
 
 describe("SqsServiceImpl", () => {
   let sqsService: SqsServiceImpl;
   let mockSqsClient: jest.Mocked<SQSClient>;
   let mockSqsConfig: jest.Mocked<SqsConfig>;
-
-  // Dados de teste
-  const videoData = new MessageVideoData(
-    { idUsuario: "user-456", email: "user@example.com" },
-    {
-      idVideo: "video-123",
-      title: "Test Video",
-      description: "A test video",
-      filename: "video.mp4",
-      fullPath: "s3://my-bucket/videos/video.mp4",
-      fileSize: 1000000,
-      duration: 120,
-      framerate: 24,
-    },
-    { outputFormat: "png", resolution: "1280x720", interval: 1 },
-    "receipt-789"
-  );
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -80,10 +66,12 @@ describe("SqsServiceImpl", () => {
 
   afterEach(() => {
     mockConsoleLog.mockClear();
+    mockConsoleError.mockClear();
   });
 
   afterAll(() => {
     mockConsoleLog.mockRestore();
+    mockConsoleError.mockRestore();
   });
 
   describe("receberProximaMensagem", () => {
@@ -113,30 +101,31 @@ describe("SqsServiceImpl", () => {
       expect(result).toBeNull();
     });
 
-    it("should return MessageVideoData when a message is received", async () => {
+    it("should return ResponseMessage when a message is received", async () => {
       // Arrange
+      const messageBody = {
+        user: { id_usuario: "user-456", email: "user@example.com" },
+        video: {
+          id_video: "video-123",
+          title: "Test Video",
+          description: "A test video",
+          filename: "video.mp4",
+          full_path: "s3://my-bucket/videos/video.mp4",
+          file_size: 1000000,
+          duration: 120,
+          framerate: 24,
+        },
+        config: {
+          output_format: "png",
+          resolution: "1280x720",
+          interval: 1,
+        },
+      };
       const sqsMessage: ReceiveMessageCommandOutput = {
         $metadata: {},
         Messages: [
           {
-            Body: JSON.stringify({
-              user: { id_usuario: "user-456", email: "user@example.com" },
-              video: {
-                id_video: "video-123",
-                title: "Test Video",
-                description: "A test video",
-                filename: "video.mp4",
-                full_path: "s3://my-bucket/videos/video.mp4",
-                file_size: 1000000,
-                duration: 120,
-                framerate: 24,
-              },
-              config: {
-                output_format: "png",
-                resolution: "1280x720",
-                interval: 1,
-              },
-            }),
+            Body: JSON.stringify(messageBody),
             ReceiptHandle: "receipt-789",
           },
         ],
@@ -144,7 +133,6 @@ describe("SqsServiceImpl", () => {
       mockSqsClient.send.mockImplementationOnce(() =>
         Promise.resolve(sqsMessage)
       );
-      jest.spyOn(MessageVideoData, "fromSqsMessage").mockReturnValue(videoData);
 
       // Act
       const result = await sqsService.receberProximaMensagem();
@@ -157,11 +145,10 @@ describe("SqsServiceImpl", () => {
           WaitTimeSeconds: 20,
         })
       );
-      expect(MessageVideoData.fromSqsMessage).toHaveBeenCalledWith(
-        JSON.parse(sqsMessage.Messages![0].Body!),
-        "receipt-789"
-      );
-      expect(result).toEqual(videoData);
+      expect(result).toEqual({
+        body: messageBody,
+        message: "receipt-789",
+      } as ResponseMessage);
     });
 
     it("should throw an error if SQS client fails", async () => {
@@ -181,13 +168,34 @@ describe("SqsServiceImpl", () => {
   describe("deletarMensagem", () => {
     it("should delete a message successfully", async () => {
       // Arrange
+      const responseMessage: ResponseMessage = {
+        body: {
+          user: { id_usuario: "user-456", email: "user@example.com" },
+          video: {
+            id_video: "video-123",
+            title: "Test Video",
+            description: "A test video",
+            filename: "video.mp4",
+            full_path: "s3://my-bucket/videos/video.mp4",
+            file_size: 1000000,
+            duration: 120,
+            framerate: 24,
+          },
+          config: {
+            output_format: "png",
+            resolution: "1280x720",
+            interval: 1,
+          },
+        },
+        message: "receipt-789",
+      };
       const deleteResponse: DeleteMessageCommandOutput = { $metadata: {} };
       mockSqsClient.send.mockImplementationOnce(() =>
         Promise.resolve(deleteResponse)
       );
 
       // Act
-      await sqsService.deletarMensagem(videoData);
+      await sqsService.deletarMensagem(responseMessage);
 
       // Assert
       expect(mockSqsConfig.getClient).toHaveBeenCalled();
@@ -206,12 +214,33 @@ describe("SqsServiceImpl", () => {
 
     it("should throw an error if deletion fails", async () => {
       // Arrange
+      const responseMessage: ResponseMessage = {
+        body: {
+          user: { id_usuario: "user-456", email: "user@example.com" },
+          video: {
+            id_video: "video-123",
+            title: "Test Video",
+            description: "A test video",
+            filename: "video.mp4",
+            full_path: "s3://my-bucket/videos/video.mp4",
+            file_size: 1000000,
+            duration: 120,
+            framerate: 24,
+          },
+          config: {
+            output_format: "png",
+            resolution: "1280x720",
+            interval: 1,
+          },
+        },
+        message: "receipt-789",
+      };
       mockSqsClient.send.mockImplementationOnce(() =>
         Promise.reject(new Error("Deletion failed"))
       );
 
       // Act & Assert
-      await expect(sqsService.deletarMensagem(videoData)).rejects.toThrow(
+      await expect(sqsService.deletarMensagem(responseMessage)).rejects.toThrow(
         "Deletion failed"
       );
       expect(mockSqsClient.send).toHaveBeenCalledWith(
@@ -220,7 +249,10 @@ describe("SqsServiceImpl", () => {
           ReceiptHandle: "receipt-789",
         })
       );
-      expect(mockConsoleLog).not.toHaveBeenCalled();
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "Erro ao deletar mensagem:",
+        expect.any(Error)
+      );
     });
   });
 });

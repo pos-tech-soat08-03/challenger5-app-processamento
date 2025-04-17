@@ -9,6 +9,7 @@ import { VideoProcessingConfig } from "../../Infrastructure/Configs/VideoProcess
 import * as path from "path";
 import { StatusError } from "../Types/Status";
 import { MessageVideoData } from "../Entity/MessageVideoData";
+import { ResponseMessage } from "../Interfaces/ResponseMessage";
 
 export class VideoQueueHandler {
   constructor(
@@ -21,14 +22,18 @@ export class VideoQueueHandler {
   ) {}
 
   async handle(): Promise<void> {
-    const videoData: MessageVideoData | null =
+    let videoData = null;
+    const responseMessage: ResponseMessage | null =
       await this.queueService.receberProximaMensagem();
-    if (videoData) {
+    if (responseMessage) {
       try {
+        videoData = MessageVideoData.fromSqsMessage(
+          responseMessage.body,
+          responseMessage.message
+        );
         MessageVideoData.validate(videoData);
+
         console.log("videoData.video.fullPath:", videoData.video.fullPath);
-
-
 
         console.log(
           `Baixando vídeo ${videoData.video.idVideo} do usuário ${videoData.user.idUsuario}`
@@ -49,7 +54,7 @@ export class VideoQueueHandler {
           "NOT_STARTED",
           0.0
         );
-        
+
         await this.notificarStatus(notStartedStatus);
         console.log(
           `Iniciando extração de frames para o vídeo ${videoData.video.idVideo}`
@@ -92,7 +97,7 @@ export class VideoQueueHandler {
           new Date().toISOString(),
           presignedUrl
         );
-        
+
         await this.notificarStatus(completedStatus);
       } catch (error) {
         let errorMessage =
@@ -108,18 +113,18 @@ export class VideoQueueHandler {
           "Code" in error &&
           error["Code"] === "NoSuchKey"
         ) {
-          errorMessage = `Vídeo não encontrado no S3: ${videoData.video.fullPath}`;
+          errorMessage = `Vídeo não encontrado no S3: ${videoData?.video.fullPath}`;
         }
 
         const errorStatus = MessageErrorEntity.create(
-          videoData.video.idVideo,
-          videoData.user.idUsuario,
+          videoData?.video.idVideo || 'Mensagem no formato errado, não foi possível encontrar o idVideo',
+          videoData?.user.idUsuario || 'Mensagem no formato errado, não foi possível encontrar o idUsuario',
           status,
           errorMessage
         );
         await this.notificarErro(errorStatus);
       }
-      await this.queueService.deletarMensagem(videoData);
+      await this.queueService.deletarMensagem(responseMessage);
     } else {
       console.log("Nenhum vídeo na fila no momento.");
     }

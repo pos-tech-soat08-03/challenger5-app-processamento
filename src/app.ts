@@ -20,7 +20,7 @@ async function startApp(): Promise<void> {
     const s3Config = new S3Config();
     const videoProcessingConfig = new VideoProcessingConfig();
 
-    if (!sqsConfig.getQueueUrl() || !snsConfig.getTopicArn()) {
+    if (!sqsConfig.getQueueUrl() || !snsConfig.getErrorTopicArn() || !snsConfig.getStatusTopicArn()) {
       throw new Error(
         "Configurações inválidas: URL da fila SQS ou ARN do tópico SNS não fornecidos"
       );

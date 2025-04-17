@@ -1,7 +1,6 @@
 import { SnsConfig } from "../../../../src/Infrastructure/Configs/SnsConfig";
 import { SNSClient } from "@aws-sdk/client-sns";
 
-// Mock do SNSClient
 jest.mock("@aws-sdk/client-sns", () => ({
   SNSClient: jest.fn(),
 }));
@@ -10,26 +9,26 @@ describe("SnsConfig", () => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
-    // Salva e limpa variáveis de ambiente
     originalEnv = { ...process.env };
     jest.clearAllMocks();
     delete process.env.NODE_ENV;
     delete process.env.AWS_REGION;
-    delete process.env.SNS_TOPIC_ARN;
+    delete process.env.AWS_ENDPOINT;
+    delete process.env.SNS_STATUS_TOPIC_ARN;
+    delete process.env.SNS_ERROR_TOPIC_ARN;
     delete process.env.AWS_ACCESS_KEY_ID;
     delete process.env.AWS_SECRET_ACCESS_KEY;
   });
 
   afterEach(() => {
-    // Restaura variáveis de ambiente
     process.env = originalEnv;
   });
 
   it("should initialize SNS client with default region and no credentials for production", () => {
-    // Act
-    const config = new SnsConfig();
+    expect(() => new SnsConfig()).toThrow(
+      "Missing required environment variable: SNS_STATUS_TOPIC_ARN"
+    );
 
-    // Assert
     expect(SNSClient).toHaveBeenCalledWith({
       region: "us-east-1",
       endpoint: undefined,
@@ -38,20 +37,13 @@ describe("SnsConfig", () => {
         secretAccessKey: "",
       },
     });
-    expect(config.getClient()).toBeInstanceOf(SNSClient);
-    expect(config.getTopicArn()).toBe(
-      "arn:aws:sns:us-east-1:SEU_ACCOUNT_ID:VideoStatusTopic"
-    );
   });
 
   it("should initialize SNS client for local environment with LocalStack", () => {
-    // Arrange
     process.env.NODE_ENV = "local";
 
-    // Act
     const config = new SnsConfig();
 
-    // Assert
     expect(SNSClient).toHaveBeenCalledWith({
       region: "us-east-1",
       endpoint: "http://localhost:4566",
@@ -60,44 +52,50 @@ describe("SnsConfig", () => {
         secretAccessKey: "test",
       },
     });
-    expect(config.getClient()).toBeInstanceOf(SNSClient);
-    expect(config.getTopicArn()).toBe(
+    expect(config.getStatusTopicArn()).toBe(
       "arn:aws:sns:us-east-1:000000000000:VideoStatusTopic"
+    );
+    expect(config.getErrorTopicArn()).toBe(
+      "arn:aws:sns:us-east-1:000000000000:VideoErrorTopic"
     );
   });
 
-  it("should use environment variables for region and topic ARN when provided", () => {
-    // Arrange
+  it("should use environment variables for region, endpoint, and topic ARNs", () => {
     process.env.AWS_REGION = "us-west-2";
-    process.env.SNS_TOPIC_ARN =
-      "arn:aws:sns:us-west-2:123456789012:custom-topic";
+    process.env.AWS_ENDPOINT = "http://custom-endpoint:4566";
+    process.env.SNS_STATUS_TOPIC_ARN =
+      "arn:aws:sns:us-west-2:123456789012:custom-status-topic";
+    process.env.SNS_ERROR_TOPIC_ARN =
+      "arn:aws:sns:us-west-2:123456789012:custom-error-topic";
 
-    // Act
     const config = new SnsConfig();
 
-    // Assert
     expect(SNSClient).toHaveBeenCalledWith({
       region: "us-west-2",
-      endpoint: undefined,
+      endpoint: "http://custom-endpoint:4566",
       credentials: {
         accessKeyId: "",
         secretAccessKey: "",
       },
     });
-    expect(config.getTopicArn()).toBe(
-      "arn:aws:sns:us-west-2:123456789012:custom-topic"
+    expect(config.getStatusTopicArn()).toBe(
+      "arn:aws:sns:us-west-2:123456789012:custom-status-topic"
+    );
+    expect(config.getErrorTopicArn()).toBe(
+      "arn:aws:sns:us-west-2:123456789012:custom-error-topic"
     );
   });
 
   it("should use AWS credentials from environment variables in production", () => {
-    // Arrange
     process.env.AWS_ACCESS_KEY_ID = "prod-key";
     process.env.AWS_SECRET_ACCESS_KEY = "prod-secret";
+    process.env.SNS_STATUS_TOPIC_ARN =
+      "arn:aws:sns:us-east-1:123456789012:status-topic";
+    process.env.SNS_ERROR_TOPIC_ARN =
+      "arn:aws:sns:us-east-1:123456789012:error-topic";
 
-    // Act
     const config = new SnsConfig();
 
-    // Assert
     expect(SNSClient).toHaveBeenCalledWith({
       region: "us-east-1",
       endpoint: undefined,
@@ -106,20 +104,28 @@ describe("SnsConfig", () => {
         secretAccessKey: "prod-secret",
       },
     });
+    expect(config.getStatusTopicArn()).toBe(
+      "arn:aws:sns:us-east-1:123456789012:status-topic"
+    );
+    expect(config.getErrorTopicArn()).toBe(
+      "arn:aws:sns:us-east-1:123456789012:error-topic"
+    );
   });
 
-  it("should prioritize SNS_TOPIC_ARN over default in local environment", () => {
-    // Arrange
+  it("should prioritize SNS topic ARNs over default in local environment", () => {
     process.env.NODE_ENV = "local";
-    process.env.SNS_TOPIC_ARN =
-      "arn:aws:sns:us-east-1:000000000000:custom-local-topic";
+    process.env.SNS_STATUS_TOPIC_ARN =
+      "arn:aws:sns:us-east-1:000000000000:custom-local-status-topic";
+    process.env.SNS_ERROR_TOPIC_ARN =
+      "arn:aws:sns:us-east-1:000000000000:custom-local-error-topic";
 
-    // Act
     const config = new SnsConfig();
 
-    // Assert
-    expect(config.getTopicArn()).toBe(
-      "arn:aws:sns:us-east-1:000000000000:custom-local-topic"
+    expect(config.getStatusTopicArn()).toBe(
+      "arn:aws:sns:us-east-1:000000000000:custom-local-status-topic"
+    );
+    expect(config.getErrorTopicArn()).toBe(
+      "arn:aws:sns:us-east-1:000000000000:custom-local-error-topic"
     );
   });
 });

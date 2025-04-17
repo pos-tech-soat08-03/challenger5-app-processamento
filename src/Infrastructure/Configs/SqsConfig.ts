@@ -6,26 +6,28 @@ export class SqsConfig {
 
   constructor() {
     const isLocal = process.env.NODE_ENV === "local";
-    console.log("NODE_ENV:", process.env.NODE_ENV);
-    console.log("SQS_QUEUE_URL:", process.env.SQS_QUEUE_URL);
-    console.log("Endpoint:", isLocal ? "http://localhost:4566" : "AWS real");
-
+    const awsEndpoint = process.env.AWS_ENDPOINT;
     const config: SQSClientConfig = {
       region: process.env.AWS_REGION || "us-east-1",
-      endpoint: isLocal ? "http://localhost:4566" : undefined, // Endpoint do LocalStack
+      endpoint: isLocal && !awsEndpoint ? "http://localhost:4566" : awsEndpoint,
       credentials: isLocal
-        ? { accessKeyId: "test", secretAccessKey: "test" } // Credenciais fictícias
+        ? { accessKeyId: "test", secretAccessKey: "test" }
         : {
             accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
           },
     };
     this.client = new SQSClient(config);
+
     this.queueUrl =
       process.env.SQS_QUEUE_URL ||
       (isLocal
-        ? "http://localhost:4566/000000000000/sua-fila-sqs"
-        : "https://sqs.us-east-1.amazonaws.com/SEU_ACCOUNT_ID/sua-fila-sqs");
+        ? "http://localhost:4566/000000000000/VideoProcessingQueue"
+        : this.throwMissingConfig("SQS_QUEUE_URL"));
+  }
+
+  private throwMissingConfig(variable: string): never {
+    throw new Error(`Missing required environment variable: ${variable}`);
   }
 
   getClient(): SQSClient {
