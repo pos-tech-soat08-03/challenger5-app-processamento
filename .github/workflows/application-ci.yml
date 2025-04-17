@@ -14,7 +14,7 @@ on:
 permissions:
   pull-requests: write # Permite SonarCloud decorar PRs
   contents: read # Para clonar o repositório
-  checks: write # Para atualizar checks nos PRs
+  checks: write # Para atualizar checks
 
 jobs:
   lint-and-build:
@@ -40,6 +40,17 @@ jobs:
 
       - name: Run tests with coverage (unit tests)
         run: npm run test-coverage
+
+      - name: Verify SONAR_TOKEN
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN is not set"
+            exit 1
+          else
+            echo "SONAR_TOKEN is set"
+          fi
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v3

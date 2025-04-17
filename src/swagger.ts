@@ -1,5 +1,5 @@
 const swaggerAutogen = require('swagger-autogen')({ language: 'pt-BR', openapi: '3.0.0' });
-
+//teste
 const doc = {
   info: {
     title: 'Microserviço de Status v1.0 - Documentação da API.',
