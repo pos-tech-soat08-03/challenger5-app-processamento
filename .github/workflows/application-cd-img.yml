@@ -3,7 +3,11 @@ name: Application CD - Image Deployment in Docker Hub
 on:
   push:
     branches:
-      - "main"        
+      - "main"
+      - "feature/*"
+  pull_request:
+    branches:
+      - "main"
 
 jobs:
   build:
@@ -23,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/challenge5-app-status:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/jackapp-processamento:latest
