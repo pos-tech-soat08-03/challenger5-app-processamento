@@ -5,25 +5,17 @@ export class SqsConfig {
   private readonly queueUrl: string;
 
   constructor() {
-    const isLocal = process.env.NODE_ENV === "local";
-    const awsEndpoint = process.env.AWS_ENDPOINT;
     const config: SQSClientConfig = {
       region: process.env.AWS_REGION || "us-east-1",
-      endpoint: isLocal && !awsEndpoint ? "http://localhost:4566" : awsEndpoint,
-      credentials: isLocal
-        ? { accessKeyId: "test", secretAccessKey: "test" }
-        : {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-          },
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
+      },
     };
     this.client = new SQSClient(config);
 
     this.queueUrl =
-      process.env.SQS_QUEUE_URL ||
-      (isLocal
-        ? "http://localhost:4566/000000000000/VideoProcessingQueue"
-        : this.throwMissingConfig("SQS_QUEUE_URL"));
+      process.env.SQS_QUEUE_URL || this.throwMissingConfig("SQS_QUEUE_URL");
   }
 
   private throwMissingConfig(variable: string): never {
