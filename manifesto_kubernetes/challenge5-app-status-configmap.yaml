@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: challenge5-app-status-configmap
+  name: jackapp-processamento-configmap
 data:
-  NODE_ENV: development
-  DATABASE_HOST: svc-challenge5-app-status-database
-  DATABASE_PORT: "3306"
-  DATABASE_NAME: challenge5_database_schema
-  DATABASE_USER: challenge5_database_username
-  DATABASE_PASS: challenge5_database_password
+  NODE_ENV: local
+  AWS_REGION: us-east-1
+  AWS_ENDPOINT: http://localhost:4566/
+  SQS_QUEUE_URL: http://localhost:4566/000000000000/VideoProcessingQueue
+  SNS_STATUS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:VideoStatusTopic
+  SNS_ERROR_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:VideoErrorTopic
+  S3_BUCKET_NAME: video-processing-bucket

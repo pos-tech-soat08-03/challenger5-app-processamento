@@ -1,12 +1,12 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: challenge5-app-status-hp 
+  name: jackapp-processamento-hp 
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: challenge5-app-status-deployment
+    name: jackapp-processamento-deployment
   minReplicas: 1
   maxReplicas: 3
   metrics:

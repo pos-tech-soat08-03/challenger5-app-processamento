@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: svc-challenge5-app-status
+  name: svc-jackapp-processamento
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
-    app: challenge5-app-status
+    app: jackapp-processamento
   ports:
   - port: 80
     targetPort: 3000
