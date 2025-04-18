@@ -1,4 +1,4 @@
-# Microserviço Video Processing / 8SOAT FIAP / Grupo 03
+# Microserviço de Processamento de Vídeos / 8SOAT FIAP / Grupo 03
 
 Projeto do 5º Tech Challenge (Hackaton) - POS TECH 8SOAT - Grupo 03 --> Repositório Aplicação de Processamento de Vídeos
 
@@ -32,7 +32,7 @@ O repositório possui um workflow de CI/CD configurado com o Github Actions, que
 O repositório possui a integração com SonarCloud, que avalia qualidade de código e indica a cobertura geral de testes da aplicação.
 
 O Projeto no SonarCloud pode ser acessado em:
- https://sonarcloud.io/project/overview?id=pos-tech-soat08-03_challenge5-app-processamento
+ https://sonarcloud.io/project/overview?id=pos-tech-soat08-03_challenger5-app-processamento
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pos-tech-soat08-03_challenge5-app-processamento&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pos-tech-soat08-03_challenge5-app-processamento)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pos-tech-soat08-03_challenge5-app-processamento&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pos-tech-soat08-03_challenge5-app-processamento)
@@ -78,7 +78,7 @@ https://github.com/pos-tech-soat08-03/challenge5-app-processamento/actions
 
 O workflow irá solicitar as chaves de acesso da AWS, que serão obtidas do ambiente do AWS Labs, e também o nome do bucket anteriormente criado no S3, que armazena o estado do Terraform da Infraestrutura necessária para a subida dos Serviços:
 
-@@@plaintext
+```plaintext
 environment: <Ambiente de deployment (ex.: lab, staging, prod)>
 aws_access_key_id: <AWS Access Key ID>
 aws_secret_access_key: <AWS Secret Access Key>
@@ -86,7 +86,7 @@ aws_session_token: <AWS Session Token>
 aws_account_id: <AWS Account ID>
 aws_backend_bucket: <AWS S3 Bucket para armazenamento do estado do Terraform>
 aws_region: <AWS Region>
-@@@
+```
 
 Ao final da execução do workflow a aplicação terá os manifestos aplicados via kubectl no ambiente do cluster EKS na AWS. Os dados de ALB e outras configurações serão armazenadas no bucket S3 (mesmo utilizado na Infraestrutura).
 
@@ -100,27 +100,27 @@ O ambiente local deve estar configurado com o AWS CLI e o kubectl, e com as cred
 
 Para configurar o acesso ao cluster EKS, siga os passos abaixo:
 
-@@@bash
+```bash
 minikube start
 aws eks update-kubeconfig --name challenge5 --region us-east-1
 kubectl config get-contexts
-@@@
+```
 
 Identifique o contexto do Cluster EKS e utilize o comando abaixo para configurar o acesso remoto:
 
-@@@bash
+```bash
 kubectl config use-context <context-name>
 kubectl config current-context
-@@@
+```
 
 A partir deste ponto você poderá gerenciar o Cluster EKS a partir do seu ambiente local. Ações comuns incluem:
 
-@@@bash
+```bash
 kubectl get nodes
 kubectl get pods -A
 kubectl logs challenge5-deployment-xxxxxxxxx
 kubectl get svc svc-challenge5
-@@@
+```
 
 ### Subindo a aplicação manualmente (Desenvolvimento) - Docker
 
@@ -129,25 +129,25 @@ Para iniciar o _build_ da aplicação já atendendo aos pré-requisitos e rodar 
 - Buildar a aplicação de acordo com o arquivo docker-compose.yml
 
     Windows:
-    @@@bash
+    ```bash
     docker compose up --build
-    @@@
+    ```
 
     Linux:
-    @@@bash
+    ```bash
     sudo docker-compose up --build
-    @@@
+    ```
 
 ### Subindo a aplicação manualmente (Desenvolvimento) - Kubernetes
 
 No diretório /manifesto_kubernetes
 
-@@@bash
+```bash
 kubectl apply -f svc-challenge5.yaml
 kubectl apply -f challenge5-configmap.yaml
 kubectl apply -f challenge5-deployment.yaml
 kubectl apply -f challenge5-hpa.yaml
-@@@
+```
 
 Desta forma iniciará:
 - service/svc-challenge5
