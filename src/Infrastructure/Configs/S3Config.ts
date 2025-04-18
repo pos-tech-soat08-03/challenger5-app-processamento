@@ -5,26 +5,18 @@ export class S3Config {
   private readonly bucketName: string;
 
   constructor() {
-    const isLocal = process.env.NODE_ENV === "local";
-    const awsEndpoint = process.env.AWS_ENDPOINT;
     const config: S3ClientConfig = {
       region: process.env.AWS_REGION || "us-east-1",
-      endpoint: isLocal && !awsEndpoint ? "http://localhost:4566" : awsEndpoint,
-      credentials: isLocal
-        ? { accessKeyId: "test", secretAccessKey: "test" }
-        : {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-          },
-      forcePathStyle: isLocal, // Necessário para LocalStack
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
+      },
+      forcePathStyle: process.env.FORCE_PATH_STYLE === "true",
     };
     this.client = new S3Client(config);
 
     this.bucketName =
-      process.env.S3_BUCKET_NAME ||
-      (isLocal
-        ? "video-processing-bucket"
-        : this.throwMissingConfig("S3_BUCKET_NAME"));
+      process.env.S3_BUCKET_NAME || this.throwMissingConfig("S3_BUCKET_NAME");
   }
 
   private throwMissingConfig(variable: string): never {

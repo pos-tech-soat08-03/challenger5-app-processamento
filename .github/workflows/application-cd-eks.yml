@@ -97,30 +97,5 @@ jobs:
       working-directory: manifesto_kubernetes/ 
       run: |
         kubectl apply -f jackapp-processamento-configmap.yaml
-        kubectl apply -f svc-jackapp-processamento.yaml
-        kubectl apply -f svc-jackapp-processamento-database.yaml
-        kubectl apply -f pv-jackapp-processamento-database.yaml
-        kubectl apply -f pvc-jackapp-processamento-database.yaml
         kubectl apply -f jackapp-processamento-hpa.yaml
-        kubectl apply -f jackapp-processamento-database-deployment.yaml
         kubectl apply -f jackapp-processamento-deployment.yaml
-  
-    - name: Obtain Load Balancer Hostname
-      id: get-load-balancer-hostname
-      run: |
-        HOSTNAME=$(kubectl get svc svc-jackapp-processamento -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-        echo "LB_HOSTNAME=$HOSTNAME" >> $GITHUB_OUTPUT
-    
-    - name: Obter Porta do Load Balancer
-      id: get-load-balancer-port
-      run: |
-        PORT=$(kubectl get svc svc-jackapp-processamento -o jsonpath='{.spec.ports[0].port}')
-        echo "LB_PORT=$PORT" >> $GITHUB_OUTPUT
-    
-    - name: Export Load Balancer Hostname and Port to S3
-      run: |
-        echo '{' > jackapp-processamento.json
-        echo '  "lb_hostname": "${{ steps.get-load-balancer-hostname.outputs.LB_HOSTNAME }}",' >> jackapp-processamento.json
-        echo '  "lb_port": "${{ steps.get-load-balancer-port.outputs.LB_PORT }}"' >> jackapp-processamento.json
-        echo '}' >> jackapp-processamento.json
-        aws s3 cp jackapp-processamento.json s3://${{ github.event.inputs.aws_backend_bucket }}/challenge5-apps/jackapp-processamento.json
