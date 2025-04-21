@@ -19,12 +19,12 @@ describe("MessageStatusEntity", () => {
       presignedUrl
     );
 
-    expect(entity.idVideo).toBe(idVideo);
-    expect(entity.idUsuario).toBe(idUsuario);
+    expect(entity.id_video).toBe(idVideo);
+    expect(entity.id_usuario).toBe(idUsuario);
     expect(entity.status).toBe(status);
     expect(entity.percentage).toBe(percentage);
-    expect(entity.statusTime).toBe(customTime);
-    expect(entity.presignedUrl).toBe(presignedUrl);
+    expect(entity.status_time).toBe(customTime);
+    expect(entity.message).toBe(presignedUrl);
   });
 
   it("should create an instance using create method without presignedUrl", () => {
@@ -38,15 +38,15 @@ describe("MessageStatusEntity", () => {
     const after = new Date();
 
     expect(entity).toBeInstanceOf(MessageStatusEntity);
-    expect(entity.idVideo).toBe(idVideo);
-    expect(entity.idUsuario).toBe(idUsuario);
+    expect(entity.id_video).toBe(idVideo);
+    expect(entity.id_usuario).toBe(idUsuario);
     expect(entity.status).toBe(status);
     expect(entity.percentage).toBe(percentage);
-    expect(entity.presignedUrl).toBeUndefined();
-    expect(entity.statusTime).toMatch(
+    expect(entity.message).toBeUndefined();
+    expect(entity.status_time).toMatch(
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
     );
-    const statusTimeDate = new Date(entity.statusTime as string);
+    const statusTimeDate = new Date(entity.status_time as string);
     expect(statusTimeDate.getTime()).toBeGreaterThanOrEqual(before.getTime());
     expect(statusTimeDate.getTime()).toBeLessThanOrEqual(after.getTime());
   });
@@ -64,15 +64,15 @@ describe("MessageStatusEntity", () => {
     const after = new Date();
 
     expect(entity).toBeInstanceOf(MessageStatusEntity);
-    expect(entity.idVideo).toBe(idVideo);
-    expect(entity.idUsuario).toBe(idUsuario);
+    expect(entity.id_video).toBe(idVideo);
+    expect(entity.id_usuario).toBe(idUsuario);
     expect(entity.status).toBe("COMPLETED");
     expect(entity.percentage).toBe(100);
-    expect(entity.presignedUrl).toBe(presignedUrl);
-    expect(entity.statusTime).toMatch(
+    expect(entity.message).toBe(presignedUrl);
+    expect(entity.status_time).toMatch(
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
     );
-    const statusTimeDate = new Date(entity.statusTime as string);
+    const statusTimeDate = new Date(entity.status_time as string);
     expect(statusTimeDate.getTime()).toBeGreaterThanOrEqual(before.getTime());
     expect(statusTimeDate.getTime()).toBeLessThanOrEqual(after.getTime());
   });
@@ -86,12 +86,12 @@ describe("MessageStatusEntity", () => {
     );
 
     const entityCopy = { ...entity };
-    expect(entityCopy.idVideo).toBe(idVideo);
-    expect(entityCopy.idUsuario).toBe(idUsuario);
+    expect(entityCopy.id_video).toBe(idVideo);
+    expect(entityCopy.id_usuario).toBe(idUsuario);
     expect(entityCopy.status).toBe(status);
     expect(entityCopy.percentage).toBe(percentage);
-    expect(entityCopy.presignedUrl).toBeUndefined();
-    expect(entityCopy.statusTime).toBeDefined();
+    expect(entityCopy.message).toBeUndefined();
+    expect(entityCopy.status_time).toBeDefined();
   });
 
   it("should only accept valid Status values", () => {

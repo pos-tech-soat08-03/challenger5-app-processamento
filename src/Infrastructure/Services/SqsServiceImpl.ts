@@ -24,7 +24,7 @@ export class SqsServiceImpl implements QueueServiceInterface {
     }
 
     const message = response.Messages[0];
-    const body = JSON.parse(message.Body || "{}") as MessageVideoData;
+    const body = JSON.parse(message.Body ?? "{}") as MessageVideoData;
     return {
       body,
       message: message.ReceiptHandle!,
