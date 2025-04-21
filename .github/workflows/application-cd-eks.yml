@@ -101,15 +101,17 @@ jobs:
           metadata:
             name: jackapp-processamento-configmap
           data:
+            SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
+            SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
+            SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
+            S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
+            SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
+            SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
+            SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
+            S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
             AWS_REGION: "${{ github.event.inputs.aws_region }}"
-            SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
-            SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
-            SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
-            S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
-            SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
-            SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
-            SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
-            S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
+            AWS_ACCESS_KEY_ID: "${{ github.event.inputs.aws_access_key_id }}"
+            AWS_SECRET_ACCESS_KEY: "${{ github.event.inputs.aws_secret_access_key }}"
             AWS_SESSION_TOKEN: "${{ github.event.inputs.aws_session_token }}"
           EOF
 
