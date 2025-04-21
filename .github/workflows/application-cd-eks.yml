@@ -106,6 +106,10 @@ jobs:
             SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
             SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
             S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
+            SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
+            SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
+            SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
+            S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
           EOF
 
 
