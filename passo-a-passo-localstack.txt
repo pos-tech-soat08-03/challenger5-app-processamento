@@ -28,7 +28,6 @@ Dependências Node: Certifique-se de que o package.json inclui:
 2. Configuração do LocalStack
 docker-compose up -d
 
-NODE_ENV=local
 AWS_REGION=us-east-1
 SQS_QUEUE_URL=http://localhost:4566/000000000000/<FILA> <- definir fila
 SNS_TOPIC_ARN=arn:aws:sns:us-east-1:000000000000:<TOPICO> <- arn definido

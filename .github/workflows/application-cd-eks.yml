@@ -60,15 +60,33 @@ jobs:
     - name: Verify AWS CLI Configuration
       run: aws sts get-caller-identity
 
-    - name: Download terraform_infrastructure.json from S3 infrastructure challenge5-infra/terraform.tfstate
+    - name: Download terraform_infrastructure.json from S3 infrastructure jackapp-infra/terraform.tfstate
       run: | 
-        aws s3 cp s3://${{ github.event.inputs.aws_backend_bucket }}/challenge5-infra/terraform.tfstate terraform_infrastructure.json 
+        aws s3 cp s3://${{ github.event.inputs.aws_backend_bucket }}/jackapp-infra/terraform.tfstate terraform_infrastructure.json 
         
     - name: Extract EKS Cluster Name 
       id: extract-cluster-name
       run: | 
         CLUSTER_NAME=$(jq -r '.outputs.jackapp_cluster_name.value' terraform_infrastructure.json)
         echo "CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_OUTPUT
+
+    - name: Extract SQS Url for Processing
+      id: sqs-processing
+      run: | 
+        SQS_QUEUE_URL=$(jq -r '.outputs[sqs-canal-de-processamento-url].value' terraform_infrastructure.json)
+        echo "SQS_QUEUE_URL=$SQS_QUEUE_URL" >> $GITHUB_OUTPUT
+
+    - name: Extract SNS Topic ARN for Status
+      id: sns-status-topic-arn
+      run: | 
+        SNS_STATUS_TOPIC_ARN=$(jq -r '.outputs[sns-status-de-processamento-arn].value' terraform_infrastructure.json)
+        echo "SNS_STATUS_TOPIC_ARN=$SNS_STATUS_TOPIC_ARN" >> $GITHUB_OUTPUT
+
+    - name: Extract SNS Topic ARN for Error
+      id: sns-error-topic-arn
+      run: | 
+        SNS_ERROR_TOPIC_ARN=$(jq -r '.outputs[sns-falhas-de-processamento-arn].value' terraform_infrastructure.json)
+        echo "SNS_ERROR_TOPIC_ARN=$SNS_ERROR_TOPIC_ARN" >> $GITHUB_OUTPUT
 
     - name: Update kubeconfig 
       run: | 
@@ -83,13 +101,11 @@ jobs:
           metadata:
             name: jackapp-processamento-configmap
           data:
-            NODE_ENV: development
             AWS_REGION: "${{ github.event.inputs.aws_region }}"
-            AWS_ENDPOINT: "${{}}"
-            SQS_QUEUE_URL: "http://sqs.us-east-1.localhost.localstack.cloud:4566/${{ github.event.inputs.aws_account_id }}/VideoProcessingQueue"
-            SNS_STATUS_TOPIC_ARN: "arn:aws:sns:${{ github.event.inputs.aws_region }}:${{ github.event.inputs.aws_account_id }}:VideoStatusTopic"
-            SNS_ERROR_TOPIC_ARN: "arn:aws:sns:${{ github.event.inputs.aws_region }}:${{ github.event.inputs.aws_account_id }}:VideoErrorTopic"
-            S3_BUCKET_NAME: "${{}}"
+            SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
+            SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
+            SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
+            S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
           EOF
 
 
