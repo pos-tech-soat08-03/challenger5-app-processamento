@@ -7,19 +7,19 @@ export class SnsConfig {
 
   constructor() {
     const config: SNSClientConfig = {
-      region: process.env.AWS_REGION || "us-east-1",
+      region: process.env.AWS_REGION ?? "us-east-1",
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "test",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "test",
       },
     };
     this.client = new SNSClient(config);
 
     this.statusTopicArn =
-      process.env.SNS_STATUS_TOPIC_ARN ||
+      process.env.SNS_STATUS_TOPIC_ARN ??
       this.throwMissingConfig("SNS_STATUS_TOPIC_ARN");
     this.errorTopicArn =
-      process.env.SNS_ERROR_TOPIC_ARN ||
+      process.env.SNS_ERROR_TOPIC_ARN ??
       this.throwMissingConfig("SNS_ERROR_TOPIC_ARN");
   }
 
