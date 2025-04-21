@@ -110,6 +110,7 @@ jobs:
             SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
             SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
             S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
+            AWS_SESSION_TOKEN: "${{ github.event.inputs.aws_session_token }}"
           EOF
 
 
