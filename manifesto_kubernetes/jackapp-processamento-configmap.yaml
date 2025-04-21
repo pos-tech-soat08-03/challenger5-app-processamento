@@ -3,7 +3,6 @@ kind: ConfigMap
 metadata:
   name: jackapp-processamento-configmap
 data:
-  NODE_ENV: local
   AWS_REGION: us-east-1
   AWS_ENDPOINT: http://localhost:4566/
   SQS_QUEUE_URL: http://localhost:4566/000000000000/VideoProcessingQueue
