@@ -9,3 +9,4 @@ data:
   SNS_STATUS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:VideoStatusTopic
   SNS_ERROR_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:VideoErrorTopic
   S3_BUCKET_NAME: video-processing-bucket
+  AWS_SESSION_TOKEN: token
