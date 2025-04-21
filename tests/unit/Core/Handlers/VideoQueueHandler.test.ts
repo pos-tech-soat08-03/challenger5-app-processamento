@@ -158,8 +158,8 @@ describe("VideoQueueHandler", () => {
     expect(notificationService.informarStatus).toHaveBeenCalledTimes(2);
     expect(notificationService.informarStatus).toHaveBeenCalledWith(
       expect.objectContaining({
-        idVideo: "video-123",
-        idUsuario: "user-456",
+        id_video: "video-123",
+        id_usuario: "user-456",
         status: "NOT_STARTED",
         percentage: 0.0,
       })
@@ -187,11 +187,11 @@ describe("VideoQueueHandler", () => {
     );
     expect(notificationService.informarStatus).toHaveBeenCalledWith(
       expect.objectContaining({
-        idVideo: "video-123",
-        idUsuario: "user-456",
+        id_video: "video-123",
+        id_usuario: "user-456",
         status: "COMPLETED",
         percentage: 100.0,
-        presignedUrl: "https://s3.amazonaws.com/my-bucket/video-123.zip",
+        message: "https://s3.amazonaws.com/my-bucket/video-123.zip",
       })
     );
     expect(queueService.deletarMensagem).toHaveBeenCalledWith(responseMessage);
@@ -210,11 +210,11 @@ describe("VideoQueueHandler", () => {
     // Assert
     expect(notificationService.informarStatus).toHaveBeenCalledWith(
       expect.objectContaining({
-        idVideo: "video-123",
-        idUsuario: "user-456",
+        id_video: "video-123",
+        id_usuario: "user-456",
         status: "ERROR",
-        errorMessage: "Download failed",
-        statusTime: expect.stringMatching(
+        error_message: "Download failed",
+        status_time: expect.stringMatching(
           /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
         ),
       })
@@ -237,12 +237,12 @@ describe("VideoQueueHandler", () => {
     // Assert
     expect(notificationService.informarStatus).toHaveBeenCalledWith(
       expect.objectContaining({
-        idVideo: "video-123",
-        idUsuario: "user-456",
+        id_video: "video-123",
+        id_usuario: "user-456",
         status: "ERROR",
-        errorMessage:
+        error_message:
           "Vídeo não encontrado no S3: s3://my-bucket/videos/video-123.mp4",
-        statusTime: expect.stringMatching(
+        status_time: expect.stringMatching(
           /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
         ),
       })
@@ -267,11 +267,11 @@ describe("VideoQueueHandler", () => {
     expect(notificationService.informarStatus).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        idVideo: "video-123",
-        idUsuario: "user-456",
+        id_video: "video-123",
+        id_usuario: "user-456",
         status: "INTERRUPTED",
-        errorMessage: "Process killed with signal",
-        statusTime: expect.stringMatching(
+        error_message: "Process killed with signal",
+        status_time: expect.stringMatching(
           /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
         ),
       })

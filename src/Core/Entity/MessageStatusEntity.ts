@@ -2,29 +2,29 @@ import { Status } from "../Types/Status";
 
 export class MessageStatusEntity {
   constructor(
-    public readonly idVideo: string,
-    public readonly idUsuario: string,
+    public readonly id_video: string,
+    public readonly id_usuario: string,
     public readonly status: Status,
     public readonly percentage: number,
-    public readonly statusTime: string,
-    public readonly presignedUrl?: string,
+    public readonly status_time: string,
+    public readonly message?: string,
   ) {}
 
   static create(
-    idVideo: string,
-    idUsuario: string,
+    id_video: string,
+    id_usuario: string,
     status: Status,
     percentage: number,
-    statusTime: string = new Date().toISOString(),
-    presignedUrl?: string
+    status_time: string = new Date().toISOString(),
+    message?: string
   ): MessageStatusEntity {
     return new MessageStatusEntity(
-      idVideo,
-      idUsuario,
+      id_video,
+      id_usuario,
       status,
       percentage,
-      statusTime,
-      presignedUrl
+      status_time,
+      message
     );
   }
 }

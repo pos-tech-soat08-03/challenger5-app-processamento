@@ -117,8 +117,8 @@ export class VideoQueueHandler {
         }
 
         const errorStatus = MessageErrorEntity.create(
-          videoData?.video.idVideo || 'Mensagem no formato errado, não foi possível encontrar o idVideo',
-          videoData?.user.idUsuario || 'Mensagem no formato errado, não foi possível encontrar o idUsuario',
+          videoData?.video.idVideo ?? 'Mensagem no formato errado, não foi possível encontrar o idVideo',
+          videoData?.user.idUsuario ?? 'Mensagem no formato errado, não foi possível encontrar o idUsuario',
           status,
           errorMessage
         );

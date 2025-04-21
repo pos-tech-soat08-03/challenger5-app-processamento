@@ -16,7 +16,7 @@ let ffmpegInstance: FfmpegCommandMock;
 
 const createFfmpegMock = (options: {
   succeed: boolean;
-  errorMessage?: string;
+  error_message?: string;
 }) => {
   ffmpegInstance = {
     outputOptions: jest.fn().mockReturnThis(),
@@ -29,7 +29,7 @@ const createFfmpegMock = (options: {
         callback();
       }
       if (event === "error" && !options.succeed) {
-        callback(new Error(options.errorMessage || "Erro genérico"));
+        callback(new Error(options.error_message || "Erro genérico"));
       }
       return ffmpegInstance;
     }),
@@ -127,7 +127,7 @@ describe("FrameExtractorServiceImpl - Nova Abordagem", () => {
   /** Teste de Erro Genérico */
   it("deve tratar erro genérico do ffmpeg e notificar status de erro", async () => {
     const ffmpegMock = () =>
-      createFfmpegMock({ succeed: false, errorMessage: "FFmpeg failed" });
+      createFfmpegMock({ succeed: false, error_message: "FFmpeg failed" });
     service = new FrameExtractorServiceImpl(ffmpegMock);
 
     await expect(
@@ -142,7 +142,7 @@ describe("FrameExtractorServiceImpl - Nova Abordagem", () => {
     expect(mockNotificationService.informarStatus).toHaveBeenCalledWith(
       expect.objectContaining({
         status: "ERROR",
-        errorMessage: "FFmpeg failed",
+        error_message: "FFmpeg failed",
       })
     );
     expect(mockConsoleError).toHaveBeenCalledWith(
@@ -156,7 +156,7 @@ describe("FrameExtractorServiceImpl - Nova Abordagem", () => {
     const ffmpegMock = () =>
       createFfmpegMock({
         succeed: false,
-        errorMessage: "Process killed with signal",
+        error_message: "Process killed with signal",
       });
     service = new FrameExtractorServiceImpl(ffmpegMock);
 
@@ -172,7 +172,7 @@ describe("FrameExtractorServiceImpl - Nova Abordagem", () => {
     expect(mockNotificationService.informarStatus).toHaveBeenCalledWith(
       expect.objectContaining({
         status: "INTERRUPTED",
-        errorMessage: "Process killed with signal",
+        error_message: "Process killed with signal",
       })
     );
     expect(mockConsoleError).toHaveBeenCalledWith(
