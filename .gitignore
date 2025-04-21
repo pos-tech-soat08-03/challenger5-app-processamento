@@ -145,3 +145,4 @@ sonar-config.js
 
 # LocalStack
 localstack-data/
+.scannerwork/

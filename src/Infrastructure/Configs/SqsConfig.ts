@@ -6,16 +6,16 @@ export class SqsConfig {
 
   constructor() {
     const config: SQSClientConfig = {
-      region: process.env.AWS_REGION || "us-east-1",
+      region: process.env.AWS_REGION ?? "us-east-1",
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "test",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "test",
       },
     };
     this.client = new SQSClient(config);
 
     this.queueUrl =
-      process.env.SQS_QUEUE_URL || this.throwMissingConfig("SQS_QUEUE_URL");
+      process.env.SQS_QUEUE_URL ?? this.throwMissingConfig("SQS_QUEUE_URL");
   }
 
   private throwMissingConfig(variable: string): never {

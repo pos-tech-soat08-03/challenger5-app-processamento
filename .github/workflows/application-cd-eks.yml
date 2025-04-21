@@ -73,19 +73,19 @@ jobs:
     - name: Extract SQS Url for Processing
       id: sqs-processing
       run: | 
-        SQS_QUEUE_URL=$(jq -r '.outputs[sqs-canal-de-processamento-url].value' terraform_infrastructure.json)
+        SQS_QUEUE_URL=$(jq -r '.outputs["sqs-canal-de-processamento-url"].value' terraform_infrastructure.json)
         echo "SQS_QUEUE_URL=$SQS_QUEUE_URL" >> $GITHUB_OUTPUT
 
     - name: Extract SNS Topic ARN for Status
       id: sns-status-topic-arn
       run: | 
-        SNS_STATUS_TOPIC_ARN=$(jq -r '.outputs[sns-status-de-processamento-arn].value' terraform_infrastructure.json)
+        SNS_STATUS_TOPIC_ARN=$(jq -r '.outputs["sns-status-de-processamento-arn"].value' terraform_infrastructure.json)
         echo "SNS_STATUS_TOPIC_ARN=$SNS_STATUS_TOPIC_ARN" >> $GITHUB_OUTPUT
 
     - name: Extract SNS Topic ARN for Error
       id: sns-error-topic-arn
       run: | 
-        SNS_ERROR_TOPIC_ARN=$(jq -r '.outputs[sns-falhas-de-processamento-arn].value' terraform_infrastructure.json)
+        SNS_ERROR_TOPIC_ARN=$(jq -r '.outputs["sns-falhas-de-processamento-arn"].value' terraform_infrastructure.json)
         echo "SNS_ERROR_TOPIC_ARN=$SNS_ERROR_TOPIC_ARN" >> $GITHUB_OUTPUT
 
     - name: Update kubeconfig 
@@ -102,6 +102,10 @@ jobs:
             name: jackapp-processamento-configmap
           data:
             AWS_REGION: "${{ github.event.inputs.aws_region }}"
+            SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
+            SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
+            SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
+            S3_BUCKET_NAME: "${{ github.event.inputs.aws_backend_bucket }}"
             SQS_QUEUE_URL: "${{steps.sqs-processing.outputs.SQS_QUEUE_URL}}"
             SNS_STATUS_TOPIC_ARN: "${{ steps.sns-status-topic-arn.outputs.SNS_STATUS_TOPIC_ARN }}"
             SNS_ERROR_TOPIC_ARN: "${{ steps.sns-error-topic-arn.outputs.SNS_ERROR_TOPIC_ARN }}"
