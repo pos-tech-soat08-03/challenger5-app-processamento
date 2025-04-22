@@ -4,6 +4,15 @@ Projeto do 5º Tech Challenge (Hackaton) - POS TECH 8SOAT - Grupo 03 --> Reposit
 
 Este repositório contém a implementação do Serviço de Processamento de Vídeos do Tech Challenge 5 da Pós Tech de Arquitetura de Software (Turma SOAT8) da FIAP.
 
+## ✒️ Grupo / Autores
+
+O Grupo que implementou a solução (Grupo 03), é composto pelos seguintes integrantes (nome, email, RM, discord):
+- Bruno Moreira Reis: brbrno@hotmail.com, RM358025, @bruno_m_reis
+- Fernando Gurkievicz, fergkz@gmail.com, RM357072, @goorkz
+- Marcio Saragiotto, marcio.saragiotto@gmail.com, RM357349, @msgiotto
+- Matias Correa Franco de Faria, devmatiascff@gmail.com, RM357411, @matiasf8321
+- Rafael da Silva Andrade, rafaandrade_@outlook.com, RM357010, @andrade_rafael
+
 ## Repositório dedicado para Microserviço de Processamento de Vídeos
 
 - Inclui o código da aplicação em Typescript e dependências associadas.
@@ -34,12 +43,12 @@ O repositório possui a integração com SonarCloud, que avalia qualidade de có
 O Projeto no SonarCloud pode ser acessado em:
 https://sonarcloud.io/project/overview?id=pos-tech-soat08-03_challenger5-app-processamento
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pos-tech-soat08-03_challenge5-app-processamento&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pos-tech-soat08-03_challenge5-app-processamento)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pos-tech-soat08-03_challenge5-app-processamento&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pos-tech-soat08-03_challenge5-app-processamento)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pos-tech-soat08-03_challenger5-app-processamento&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pos-tech-soat08-03_challenger5-app-processamento)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pos-tech-soat08-03_challenger5-app-processamento&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pos-tech-soat08-03_challenger5-app-processamento)
 
 ## Cobertura de Testes
 
-<mark>TODO - Inserir Imagem</mark>
+![Imagem de cobertura](docs/coverage.png)
 
 ## Configuração do CI/CD
 
@@ -51,7 +60,7 @@ O workflow de CI é acionado a cada push no repositório.
 
 [As ultimas execuções do CI podem ser visualizadas nesse link](https://github.com/pos-tech-soat08-03/challenger5-app-processamento/actions/workflows/application-ci.yml)
 
-<mark>TODO - Inserir Imagem</mark>
+![Imagem do ci](docs/ci-img.png)
 
 ### CD - Continuous Deployment
 
@@ -60,13 +69,13 @@ O workflow de CD possui duas etapas:
 - A primeira acontece ao finalizar o merge, e realiza o deploy da aplicação no Docker Hub.
   [As ultimas execuções do CD de Imagem podem ser visualizadas nesse link](https://github.com/pos-tech-soat08-03/challenger5-app-processamento/actions/workflows/application-cd-img.yml)
 
-<mark>TODO - Inserir Imagem</mark>
+![Imagem do cd de imagem](docs/cd-img.png)
 
 - A segunda parte é manual, e realiza o deploy da aplicação no Cluster EKS na AWS.
   [As ultimas execuções do CD EKS podem ser visualizadas nesse link](https://github.com/pos-tech-soat08-03/challenger5-app-processamento/actions/workflows/application-cd-eks.yml)
 
-<mark>TODO - Inserir Imagem</mark>
 
+![Imagem do cd de eks](docs/cd-eks.png)
 ### Subindo a aplicação na AWS com o Github Actions (Produção)
 
 Para subir os recursos Serverless com o Github Actions, siga os passos abaixo:
@@ -88,11 +97,7 @@ aws_backend_bucket: <AWS S3 Bucket para armazenamento do estado do Terraform>
 aws_region: <AWS Region>
 ```
 
-Ao final da execução do workflow a aplicação terá os manifestos aplicados via kubectl no ambiente do cluster EKS na AWS. Os dados de ALB e outras configurações serão armazenadas no bucket S3 (mesmo utilizado na Infraestrutura).
-
-A aplicação também estará disponível no endereço do ALB, que será informado ao final da execução do workflow - porém o acesso à aplicação será restrito por segurança via API Gateway.
-
-- Acesse o repositório de [Serverless](https://github.com/pos-tech-soat08-03/challenge5-serverless) para mais informações sobre a configuração do API Gateway
+Ao final da execução do workflow a aplicação terá os manifestos aplicados via kubectl no ambiente do cluster EKS na AWS. 
 
 ### Para gerenciar a aplicação no Cluster EKS a partir de um ambiente local
 
@@ -102,7 +107,7 @@ Para configurar o acesso ao cluster EKS, siga os passos abaixo:
 
 ```bash
 minikube start
-aws eks update-kubeconfig --name challenge5 --region us-east-1
+aws eks update-kubeconfig --name jackapp --region us-east-1
 kubectl config get-contexts
 ```
 
@@ -156,11 +161,6 @@ Desta forma iniciará:
 - deployment.apps/challenge5-deployment
 - horizontalpodautoscaler.autoscaling/challenge5-hpa
 
-### Verificar se está funcionando
-
-Neste ponto, o serviço deve estar ativo, para verificar se está funcionando, basta acessar a url [http://localhost:3000/](http://localhost:3000/).
-
-_Caso esteja acessando a aplicação de outro host, favor modificar a URL para o endereço correto do seu host._
 
 ## Sobre a aplicação / Arquitetura
 
@@ -178,7 +178,6 @@ A arquitetura utilizada no sistema foi a **Arquitetura Limpa / Clean Architectur
 - Regra de dependência: em que as dependências sempre apontam para dentro, ou seja, que camadas mais internas não dependam e não tenham conhecimento sobre recursos / objeto / tecnologias das camadas externas.
 - Encapsulamento das entidades: regras das entidades do core não podem ser afetadas pelo seu relacionamento com outras parte da aplicação (não podem ser alteradas por necessidades de alteração em outras camadas)
 - Regras de negócio isoladas: utilizando casos de uso, as regras de negócio permanecem em uma camada intermediária entre entidades e adaptadores do mundo externo. Casos de uso somente são alteradas por necessidades reais do negócio.
-- Adaptadores de interfaces: converte informações de-para camadas internas e externas (gateways e presenters), e orquestram chamadas através de controllers
 - Frameworks somente podem ser utilizados na camada mais externa de infraestrutura (frameworks e drivers, nesse diagrama)
 
 ## Estrutura dos Diretórios
@@ -303,12 +302,12 @@ Esse é o formato da mensagem que é enviado ao SNS para informar o status do pr
 
 ```json
 {
-  "idVideo": "string",        // ID do vídeo (ex.: "video-123")
-  "idUsuario": "string",     // ID do usuário (ex.: "user-456")
+  "id_video": "string",        // ID do vídeo (ex.: "video-123")
+  "id_usuario": "string",     // ID do usuário (ex.: "user-456")
   "status": "string",        // Status do processamento: "NOT_STARTED", "PROCESSING", "COMPLETED"
   "percentage": number,       // Percentual de progresso (0 a 100)
-  "statusTime": "string",    // Timestamp no formato ISO 8601 (ex.: "2025-04-18T12:00:00.000Z")
-  "presignedUrl": "string"   // (Opcional) URL assinada do arquivo ZIP no S3 (presente apenas quando status é "COMPLETED")
+  "status_time": "string",    // Timestamp no formato ISO 8601 (ex.: "2025-04-18T12:00:00.000Z")
+  "message": "string"   // (Opcional) URL assinada do arquivo ZIP no S3 (presente apenas quando status é "COMPLETED")
 }
 ```
 
@@ -318,16 +317,12 @@ Esse é o formato da mensagem que é enviado ao SNS para informar o status do pr
 
 ```json
 {
-  "idVideo": "string", // ID do vídeo (ex.: "video-123")
-  "idUsuario": "string", // ID do usuário (ex.: "user-456")
+  "id_video": "string", // ID do vídeo (ex.: "video-123")
+  "id_usuario": "string", // ID do usuário (ex.: "user-456")
   "status": "string", // Status de erro: "ERROR" ou "INTERRUPTED"
-  "errorMessage": "string", // Descrição do erro (ex.: "Vídeo não encontrado no S3")
-  "statusTime": "string" // Timestamp no formato ISO 8601 (ex.: "2025-04-18T12:00:00.000Z")
+  "error_message": "string", // Descrição do erro (ex.: "Vídeo não encontrado no S3")
+  "status_time": "string" // Timestamp no formato ISO 8601 (ex.: "2025-04-18T12:00:00.000Z")
 }
 ```
 
-## Documentação adicional
 
-Para mais informações sobre a arquitetura, verifique o readme dos outros repositorios:
-
-<mark>TODO - Inserir Imagem</mark>
