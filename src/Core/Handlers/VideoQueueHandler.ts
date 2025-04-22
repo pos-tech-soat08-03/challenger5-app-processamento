@@ -25,6 +25,7 @@ export class VideoQueueHandler {
     let videoData = null;
     const responseMessage: ResponseMessage | null =
       await this.queueService.receberProximaMensagem();
+    console.log(responseMessage)
     if (responseMessage) {
       try {
         videoData = MessageVideoData.fromSqsMessage(
