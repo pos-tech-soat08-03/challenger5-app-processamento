@@ -125,7 +125,7 @@ describe("SqsServiceImpl", () => {
         $metadata: {},
         Messages: [
           {
-            Body: JSON.stringify(messageBody),
+            Body: JSON.stringify({ Message: messageBody }),
             ReceiptHandle: "receipt-789",
           },
         ],
