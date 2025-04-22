@@ -25,7 +25,7 @@ export class SqsServiceImpl implements QueueServiceInterface {
     const message = response.Messages[0];
     const bodyString = message.Body!;
     const rawData = JSON.parse(bodyString);
-    const dataMessage = rawData.Message
+    const dataMessage = JSON.parse(rawData.Message)
     return {
       body: dataMessage,
       message: message.ReceiptHandle!,
