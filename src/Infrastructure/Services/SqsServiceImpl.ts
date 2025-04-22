@@ -5,7 +5,6 @@ import {
 } from "@aws-sdk/client-sqs";
 import { SqsConfig } from "../Configs/SqsConfig";
 import { QueueServiceInterface } from "../../Core/Interfaces/Services/QueueServiceInterface";
-import { MessageVideoData } from "../../Core/Entity/MessageVideoData";
 import { ResponseMessage } from "../../Core/Interfaces/ResponseMessage";
 
 export class SqsServiceImpl implements QueueServiceInterface {
@@ -24,9 +23,11 @@ export class SqsServiceImpl implements QueueServiceInterface {
     }
 
     const message = response.Messages[0];
-    const body = JSON.parse(message.Body ?? "{}") as MessageVideoData;
+    const bodyString = message.Body!;
+    const rawData = JSON.parse(bodyString);
+    const dataMessage = rawData.Message
     return {
-      body,
+      body: dataMessage,
       message: message.ReceiptHandle!,
     };
   }
