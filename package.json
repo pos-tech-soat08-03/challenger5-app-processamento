@@ -18,7 +18,7 @@
   "author": "Grupo 3 SOAT8",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.782.0",
+    "@aws-sdk/client-s3": "^3.787.0",
     "@aws-sdk/client-sns": "^3.777.0",
     "@aws-sdk/client-sqs": "^3.777.0",
     "@aws-sdk/s3-request-presigner": "^3.782.0",
